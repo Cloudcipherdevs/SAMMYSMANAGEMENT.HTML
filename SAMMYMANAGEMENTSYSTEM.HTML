@@ -1,0 +1,1962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
+<title>ElimuConnect – Smart School System</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Sora:wght@400;600;700&display=swap" rel="stylesheet"/>
+<style>
+/* ================================================================
+   TOKENS
+================================================================ */
+:root{
+  --primary:#0A84FF;--primary-dark:#0060D0;--primary-light:#E8F3FF;
+  --cyan:#00C6C6;--cyan-light:#E0FAFA;
+  --green:#22C55E;--green-light:#DCFCE7;
+  --amber:#F59E0B;--amber-light:#FEF3C7;
+  --red:#EF4444;--red-light:#FEE2E2;
+  --purple:#8B5CF6;--purple-light:#EDE9FE;
+  --orange:#F97316;--orange-light:#FFF0E6;
+  --bg:#F4F7FB;--surface:#FFFFFF;--surface2:#F0F4FA;--surface3:#E8EEF8;
+  --border:#E2E8F4;--border2:#C8D6EB;
+  --text:#0F1B2D;--text2:#4B5C7A;--text3:#8FA3BF;
+  --xs:0 1px 3px rgba(10,30,80,.06);
+  --sm:0 2px 8px rgba(10,30,80,.08);
+  --md:0 4px 16px rgba(10,30,80,.10);
+  --lg:0 8px 32px rgba(10,30,80,.14);
+  --r:16px;--rs:10px;--rx:6px;
+  --top:60px;
+  --f:'Plus Jakarta Sans',sans-serif;
+  --fd:'Sora',sans-serif;
+  --ease:.22s cubic-bezier(.4,0,.2,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px}
+body{font-family:var(--f);background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+button{cursor:pointer;border:none;background:none;font-family:inherit}
+input,select,textarea{font-family:inherit}
+a{text-decoration:none;color:inherit}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+
+/* ================================================================
+   APP SHELL
+================================================================ */
+#app{min-height:100vh;display:flex;flex-direction:column}
+.page{display:none;flex-direction:column;min-height:100vh}
+.page.active{display:flex}
+
+/* ================================================================
+   TOP BAR
+================================================================ */
+.topbar{
+  position:sticky;top:0;z-index:100;height:var(--top);
+  background:#3D8B37;
+  padding:0 16px;display:flex;align-items:center;justify-content:space-between;
+  box-shadow:0 2px 8px rgba(0,0,0,.2);
+}
+.topbar-left{display:flex;align-items:center;gap:12px}
+.hamburger{
+  width:38px;height:38px;border-radius:8px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+  cursor:pointer;transition:var(--ease);
+}
+.hamburger:hover{background:rgba(255,255,255,.15)}
+.hamburger span{display:block;width:22px;height:2px;background:#fff;border-radius:2px;transition:var(--ease)}
+.topbar-title{color:#fff;font-family:var(--fd);font-weight:700;font-size:1.1rem}
+.topbar-title span{opacity:.8;font-size:.85rem;font-weight:400}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.notif-btn{
+  width:36px;height:36px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-size:1rem;
+  cursor:pointer;transition:var(--ease);position:relative;
+  background:rgba(255,255,255,.15);
+}
+.notif-btn:hover{background:rgba(255,255,255,.25)}
+.notif-dot{position:absolute;top:5px;right:5px;width:8px;height:8px;border-radius:50%;background:var(--red);border:2px solid #3D8B37}
+.avatar-circle{
+  width:38px;height:38px;border-radius:50%;
+  background:#fff;display:flex;align-items:center;justify-content:center;
+  font-size:1rem;cursor:pointer;box-shadow:0 0 0 2px rgba(255,255,255,.4);
+  overflow:hidden;
+}
+.avatar-initials{font-weight:700;font-size:.78rem;color:#3D8B37}
+
+/* ================================================================
+   DRAWER OVERLAY
+================================================================ */
+.drawer-overlay{
+  position:fixed;inset:0;z-index:400;
+  background:rgba(0,0,0,.45);
+  opacity:0;pointer-events:none;
+  transition:opacity .28s;
+  backdrop-filter:blur(2px);
+}
+.drawer-overlay.open{opacity:1;pointer-events:all}
+
+/* ================================================================
+   DRAWER PANEL
+================================================================ */
+.drawer{
+  position:fixed;top:0;left:0;bottom:0;z-index:401;
+  width:78%;max-width:300px;
+  background:#8B1A1A;
+  transform:translateX(-100%);
+  transition:transform .3s cubic-bezier(.4,0,.2,1);
+  display:flex;flex-direction:column;
+  overflow-y:auto;
+}
+.drawer.open{transform:translateX(0)}
+
+.drawer-header{
+  background:#3D8B37;
+  padding:14px 18px;display:flex;align-items:center;gap:12px;
+  min-height:var(--top);flex-shrink:0;
+}
+.drawer-avatar{
+  width:46px;height:46px;border-radius:50%;background:#fff;
+  display:flex;align-items:center;justify-content:center;font-size:1.4rem;
+  box-shadow:0 0 0 3px rgba(255,255,255,.3);flex-shrink:0;overflow:hidden;
+}
+.drawer-user-name{color:#fff;font-weight:700;font-size:.95rem;line-height:1.2}
+.drawer-user-sub{color:rgba(255,255,255,.7);font-size:.75rem;margin-top:2px}
+
+.drawer-nav{flex:1;padding:12px 0 24px}
+.drawer-section-label{
+  padding:14px 20px 6px;
+  font-size:.7rem;font-weight:700;letter-spacing:.1em;
+  color:#64B5F6;text-transform:uppercase;
+}
+.drawer-item{
+  display:flex;align-items:center;gap:14px;
+  padding:13px 20px;cursor:pointer;
+  transition:background .15s;position:relative;
+}
+.drawer-item:hover{background:rgba(255,255,255,.08)}
+.drawer-item.active{background:rgba(255,255,255,.15)}
+.drawer-item.active::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;
+  width:4px;background:#64B5F6;border-radius:0 4px 4px 0;
+}
+.drawer-item-ico{
+  width:32px;height:32px;border-radius:8px;
+  background:rgba(255,255,255,.12);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1rem;flex-shrink:0;
+}
+.drawer-item-label{color:#fff;font-size:.9rem;font-weight:500}
+.drawer-item.active .drawer-item-label{font-weight:700}
+
+.drawer-footer{
+  border-top:1px solid rgba(255,255,255,.1);
+  padding:16px 20px;flex-shrink:0;
+}
+.drawer-logout{
+  display:flex;align-items:center;gap:12px;padding:11px 14px;
+  border-radius:var(--rs);cursor:pointer;
+  background:rgba(255,255,255,.1);transition:var(--ease);width:100%;
+}
+.drawer-logout:hover{background:rgba(255,255,255,.18)}
+.drawer-logout span{color:#fff;font-size:.88rem;font-weight:600}
+
+/* ================================================================
+   SCROLL AREA
+================================================================ */
+.scroll-area{
+  flex:1;overflow-y:auto;
+  padding:20px 16px 32px;
+}
+
+/* ================================================================
+   BUTTONS
+================================================================ */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:13px 22px;border-radius:var(--rs);font-weight:600;font-size:.92rem;transition:var(--ease)}
+.btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;box-shadow:0 3px 14px rgba(10,132,255,.35)}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 5px 18px rgba(10,132,255,.45)}
+.btn-success{background:linear-gradient(135deg,var(--green),#16A34A);color:#fff;box-shadow:0 3px 12px rgba(34,197,94,.3)}
+.btn-success:hover{transform:translateY(-1px)}
+.btn-cyan{background:linear-gradient(135deg,var(--cyan),#0891B2);color:#fff;box-shadow:0 3px 12px rgba(0,198,198,.28)}
+.btn-danger{background:var(--red);color:#fff}
+.btn-outline{border:1.5px solid var(--border2);color:var(--text2);background:var(--surface)}
+.btn-outline:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-light)}
+.btn-ghost{color:var(--text2)}
+.btn-ghost:hover{background:var(--surface2)}
+.btn-full{width:100%}
+.btn-sm{padding:9px 14px;font-size:.82rem;border-radius:var(--rx)}
+.btn-lg{padding:17px 28px;font-size:1rem;border-radius:var(--r)}
+.btn-icon{padding:9px;width:38px;height:38px;border-radius:var(--rx)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* ================================================================
+   INPUTS
+================================================================ */
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:.8rem;font-weight:600;color:var(--text2)}
+.input{padding:13px 15px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--surface);color:var(--text);font-size:.92rem;transition:var(--ease);outline:none;width:100%}
+.input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(10,132,255,.12)}
+.input::placeholder{color:var(--text3)}
+.input-hint{font-size:.74rem;color:var(--text3)}
+.inp-prefix{display:flex;align-items:center;border-radius:var(--rs);border:1.5px solid var(--border);overflow:hidden;background:var(--surface)}
+.inp-prefix:focus-within{border-color:var(--primary);box-shadow:0 0 0 3px rgba(10,132,255,.12)}
+.inp-prefix .pre-tag{padding:13px 12px;background:var(--surface2);color:var(--text3);font-size:.8rem;font-weight:600;border-right:1.5px solid var(--border);white-space:nowrap}
+.inp-prefix input{border:none;flex:1;padding:13px 12px;outline:none;font-family:var(--f);font-size:.92rem;color:var(--text);background:transparent}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-grid .span2{grid-column:span 2}
+@media(max-width:380px){.form-grid{grid-template-columns:1fr}.form-grid .span2{grid-column:span 1}}
+.phone-row{display:flex;gap:10px}
+.phone-prefix{display:flex;align-items:center;gap:8px;padding:13px 14px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--surface);font-size:.9rem;cursor:pointer;min-width:88px;transition:var(--ease)}
+.phone-prefix:hover{border-color:var(--primary)}
+
+/* ================================================================
+   CARDS
+================================================================ */
+.card{background:var(--surface);border-radius:var(--r);border:1px solid var(--border);overflow:hidden;box-shadow:var(--xs)}
+.card-header{padding:15px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.card-header h3{font-size:.95rem;font-weight:700;color:var(--text)}
+.card-body{padding:18px}
+.card-footer{padding:13px 18px;border-top:1px solid var(--border);background:var(--surface2)}
+.section-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.section-hd h2{font-size:1.15rem;font-weight:700;color:var(--text)}
+.section-sub{font-size:.78rem;color:var(--text3);margin-top:2px}
+
+/* ================================================================
+   BADGES
+================================================================ */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:99px;font-size:.72rem;font-weight:700}
+.badge-success{background:var(--green-light);color:#15803D}
+.badge-warning{background:var(--amber-light);color:#B45309}
+.badge-danger{background:var(--red-light);color:#B91C1C}
+.badge-primary{background:var(--primary-light);color:var(--primary-dark)}
+.badge-cyan{background:var(--cyan-light);color:#007A7A}
+.badge-purple{background:var(--purple-light);color:#6D28D9}
+.badge-orange{background:var(--orange-light);color:#C2410C}
+.badge-gray{background:var(--surface2);color:var(--text2)}
+
+/* ================================================================
+   AUTH
+================================================================ */
+.auth-wrap{min-height:100vh;display:flex;flex-direction:column;background:linear-gradient(160deg,#EAF3FF 0%,var(--bg) 55%,#E0FAFA 100%)}
+.auth-hero{padding:44px 24px 28px;display:flex;flex-direction:column;align-items:center;text-align:center}
+.auth-logo{width:72px;height:72px;border-radius:20px;background:linear-gradient(135deg,var(--primary),var(--cyan));display:flex;align-items:center;justify-content:center;font-size:2rem;color:#fff;margin-bottom:18px;box-shadow:0 10px 28px rgba(10,132,255,.32)}
+.auth-hero h1{font-family:var(--fd);font-size:1.85rem;font-weight:700;margin-bottom:8px;line-height:1.15}
+.auth-hero h1 span{color:var(--primary)}
+.auth-hero p{color:var(--text2);font-size:.9rem;max-width:290px;line-height:1.6}
+.auth-card{margin:0 16px 0;background:var(--surface);border-radius:var(--r);box-shadow:var(--lg);padding:26px 22px;border:1px solid var(--border)}
+.auth-card h2{font-family:var(--fd);font-size:1.25rem;font-weight:700;margin-bottom:5px}
+.auth-card p{color:var(--text2);font-size:.88rem;margin-bottom:22px;line-height:1.5}
+.role-pills{display:flex;gap:10px;margin-bottom:18px}
+.role-pill{flex:1;padding:11px;border-radius:var(--rs);border:1.5px solid var(--border);text-align:center;cursor:pointer;transition:var(--ease);font-weight:600;font-size:.86rem;color:var(--text2)}
+.role-pill.active{border-color:var(--primary);background:var(--primary-light);color:var(--primary)}
+.divider{display:flex;align-items:center;gap:12px;margin:18px 0;color:var(--text3);font-size:.8rem}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.auth-switch{text-align:center;margin-top:16px;font-size:.85rem;color:var(--text2)}
+.auth-switch a{color:var(--primary);font-weight:600}
+.otp-inputs{display:flex;gap:10px;justify-content:center;margin:10px 0}
+.otp-input{width:52px;height:60px;text-align:center;font-size:1.5rem;font-weight:700;border:1.5px solid var(--border);border-radius:var(--rs);background:var(--surface);color:var(--text);outline:none;transition:var(--ease)}
+.otp-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(10,132,255,.12)}
+
+/* ================================================================
+   PARENT DASHBOARD
+================================================================ */
+.greeting-banner{background:linear-gradient(135deg,var(--primary) 0%,#0060D0 60%,#004AAD 100%);border-radius:var(--r);padding:22px 18px;color:#fff;position:relative;overflow:hidden;margin-bottom:18px}
+.greeting-banner::before{content:'';position:absolute;top:-28px;right:-16px;width:110px;height:110px;border-radius:50%;background:rgba(255,255,255,.07)}
+.greeting-banner::after{content:'';position:absolute;bottom:-18px;right:28px;width:70px;height:70px;border-radius:50%;background:rgba(255,255,255,.05)}
+.greeting-banner .greet{font-size:.82rem;opacity:.8;margin-bottom:1px}
+.greeting-banner h2{font-family:var(--fd);font-size:1.35rem;font-weight:700;margin-bottom:10px}
+.greeting-banner .student-chip{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.18);border-radius:99px;padding:5px 13px;font-size:.8rem;font-weight:600}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px}
+.stat-card{background:var(--surface);border-radius:var(--rs);padding:15px;border:1px solid var(--border);box-shadow:var(--xs)}
+.stat-card .st-label{font-size:.72rem;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px}
+.stat-card .st-value{font-family:var(--fd);font-size:1.45rem;font-weight:700}
+.stat-card .st-sub{font-size:.74rem;color:var(--text3);margin-top:2px}
+.fee-hero-card{background:linear-gradient(135deg,#FF6B35,#E85D04);color:#fff;border:none;grid-column:span 2}
+.fee-hero-card .st-label,.fee-hero-card .st-sub{color:rgba(255,255,255,.8)}
+.fee-hero-card .st-value{font-size:1.9rem}
+
+/* Result rows */
+.result-row{display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-bottom:1px solid var(--border)}
+.result-row:last-child{border-bottom:none}
+.result-row .subj{font-weight:600;font-size:.92rem;min-width:80px}
+.score-bar{flex:1;margin:0 12px;height:6px;background:var(--surface2);border-radius:99px;overflow:hidden}
+.score-fill{height:100%;border-radius:99px;transition:width .5s}
+.score-label{font-weight:700;font-size:.88rem;min-width:34px;text-align:right}
+
+/* Notification items */
+.notif-item{display:flex;gap:11px;align-items:flex-start;padding:13px 0;border-bottom:1px solid var(--border)}
+.notif-item:last-child{border-bottom:none}
+.notif-ico{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+.notif-info .notif-title{font-weight:600;font-size:.9rem;margin-bottom:2px}
+.notif-info .notif-body{font-size:.8rem;color:var(--text2);line-height:1.4}
+.notif-info .notif-time{font-size:.72rem;color:var(--text3);margin-top:3px}
+.notif-full-item{background:var(--surface);border-radius:var(--rs);padding:15px;border:1px solid var(--border);margin-bottom:9px;display:flex;gap:11px;cursor:pointer;transition:var(--ease);position:relative}
+.notif-full-item:hover{box-shadow:var(--sm)}
+.notif-full-item.unread::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--primary);border-radius:4px 0 0 4px}
+.notif-full-item .nf-title{font-weight:700;font-size:.9rem;margin-bottom:3px}
+.notif-full-item .nf-body{font-size:.8rem;color:var(--text2);line-height:1.45}
+.notif-full-item .nf-time{font-size:.72rem;color:var(--text3);margin-top:5px}
+
+/* ================================================================
+   FEES (PARENT)
+================================================================ */
+.fees-hero{background:linear-gradient(135deg,#1B4332,#22C55E);border-radius:var(--r);padding:22px;color:#fff;margin-bottom:18px}
+.fees-hero .f-label{font-size:.8rem;opacity:.75;margin-bottom:3px}
+.fees-hero .f-amount{font-family:var(--fd);font-size:2.3rem;font-weight:700;margin-bottom:14px}
+.fees-breakdown{display:flex;background:rgba(255,255,255,.15);border-radius:var(--rs);overflow:hidden}
+.fee-stat{flex:1;padding:13px;text-align:center}
+.fee-stat+.fee-stat{border-left:1px solid rgba(255,255,255,.2)}
+.fee-stat .fs-label{font-size:.68rem;opacity:.75;margin-bottom:2px}
+.fee-stat .fs-val{font-weight:700;font-size:1rem}
+.mpesa-btn{background:linear-gradient(135deg,#00B300,#007A00);color:#fff;border-radius:var(--rs);padding:17px;display:flex;align-items:center;justify-content:center;gap:11px;width:100%;font-weight:700;font-size:.95rem;box-shadow:0 5px 18px rgba(0,179,0,.3);transition:var(--ease);cursor:pointer;border:none;font-family:var(--f)}
+.mpesa-btn:hover{transform:translateY(-1px);box-shadow:0 7px 22px rgba(0,179,0,.4)}
+.mpesa-logo{background:#fff;color:#00B300;border-radius:5px;padding:3px 7px;font-weight:900;font-size:.8rem}
+.ph-item{display:flex;align-items:center;gap:11px;padding:12px 0;border-bottom:1px solid var(--border)}
+.ph-item:last-child{border-bottom:none}
+.ph-ico{width:40px;height:40px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+.ph-info{flex:1}
+.ph-name{font-weight:700;font-size:.88rem}
+.ph-meta{font-size:.74rem;color:var(--text3);margin-top:2px}
+.ph-right{text-align:right}
+.ph-amount{font-weight:700;font-size:.92rem;color:var(--green)}
+.ph-receipt-id{font-size:.71rem;color:var(--primary);font-weight:600;margin-top:2px;cursor:pointer}
+.ph-receipt-id:hover{text-decoration:underline}
+.progress-bar{height:9px;background:var(--surface2);border-radius:99px;overflow:hidden}
+.progress-fill{height:100%;border-radius:99px;transition:width .6s}
+.progress-fill.green{background:linear-gradient(90deg,var(--green),#10B981)}
+.progress-fill.blue{background:linear-gradient(90deg,var(--primary),var(--cyan))}
+.progress-fill.amber{background:linear-gradient(90deg,var(--amber),#F59E0B)}
+
+/* ================================================================
+   RESULTS (PARENT)
+================================================================ */
+.results-header{background:linear-gradient(135deg,#6C3483,var(--purple));border-radius:var(--r);padding:22px;color:#fff;margin-bottom:18px}
+.results-header h2{font-family:var(--fd);font-size:1.25rem;font-weight:700}
+.results-header p{opacity:.8;font-size:.83rem;margin-top:3px}
+.results-gpa{font-family:var(--fd);font-size:2.8rem;font-weight:700;margin:8px 0 4px}
+.subject-card{background:var(--surface);border-radius:var(--rs);padding:15px;border:1px solid var(--border);margin-bottom:9px;box-shadow:var(--xs)}
+.subject-card .s-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
+.subject-card .s-name{font-weight:700;font-size:.92rem}
+.subject-card .s-score{font-family:var(--fd);font-size:1.25rem;font-weight:700}
+.subject-card .s-bar{height:7px;background:var(--surface2);border-radius:99px;overflow:hidden}
+.subject-card .s-fill{height:100%;border-radius:99px;transition:width .6s}
+.subject-card .s-meta{display:flex;align-items:center;justify-content:space-between;margin-top:7px}
+.subject-card .s-teacher{font-size:.74rem;color:var(--text3)}
+
+/* ================================================================
+   LEARNING
+================================================================ */
+.lesson-item{display:flex;gap:12px;align-items:flex-start;padding:13px 0;border-bottom:1px solid var(--border);cursor:pointer;transition:var(--ease)}
+.lesson-item:last-child{border-bottom:none}
+.lesson-item:hover{opacity:.72}
+.lesson-thumb{width:52px;height:52px;border-radius:var(--rs);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.4rem}
+.lesson-item .l-title{font-weight:700;font-size:.92rem;margin-bottom:2px}
+.lesson-item .l-meta{font-size:.77rem;color:var(--text2)}
+.lesson-item .l-date{font-size:.72rem;color:var(--text3);margin-top:2px}
+.lesson-video{background:linear-gradient(135deg,#1B2A3B,#0F1B2D);border-radius:var(--r);aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;margin-bottom:14px}
+.play-btn{width:60px;height:60px;background:rgba(255,255,255,.9);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.7rem;cursor:pointer}
+.lesson-content-text{line-height:1.72;color:var(--text2);font-size:.92rem}
+.tab-bar{display:flex;background:var(--surface2);border-radius:var(--rs);padding:4px;gap:0;margin-bottom:16px}
+.tab-btn{flex:1;padding:9px;border-radius:calc(var(--rs) - 2px);font-size:.79rem;font-weight:600;color:var(--text3);cursor:pointer;transition:var(--ease);text-align:center}
+.tab-btn.active{background:var(--surface);color:var(--primary);box-shadow:var(--xs)}
+
+/* ================================================================
+   AI TUTOR
+================================================================ */
+.ai-hero{background:linear-gradient(135deg,#0F2027,#203A43,#2C5364);border-radius:var(--r);padding:18px;color:#fff;margin-bottom:14px;display:flex;align-items:center;gap:13px}
+.ai-avatar{width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,var(--primary),var(--cyan));display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0}
+.ai-hero h2{font-family:var(--fd);font-weight:700;font-size:1.05rem;margin-bottom:2px}
+.ai-hero p{font-size:.8rem;opacity:.72}
+.ai-online{display:inline-flex;align-items:center;gap:4px;font-size:.7rem}
+.ai-dot{width:6px;height:6px;border-radius:50%;background:var(--green)}
+.chat-container{background:var(--surface);border-radius:var(--r);border:1px solid var(--border);overflow:hidden;margin-bottom:14px}
+.chat-messages{padding:14px;min-height:280px;max-height:400px;overflow-y:auto;display:flex;flex-direction:column;gap:11px}
+.chat-msg{max-width:85%;display:flex;flex-direction:column;gap:3px}
+.chat-msg.user{align-self:flex-end;align-items:flex-end}
+.chat-msg.ai{align-self:flex-start;align-items:flex-start}
+.chat-bubble{padding:11px 15px;border-radius:18px;font-size:.9rem;line-height:1.5}
+.chat-msg.user .chat-bubble{background:var(--primary);color:#fff;border-radius:18px 18px 4px 18px}
+.chat-msg.ai .chat-bubble{background:var(--surface2);color:var(--text);border-radius:18px 18px 18px 4px;border:1px solid var(--border)}
+.chat-time{font-size:.69rem;color:var(--text3)}
+.chat-input-row{display:flex;gap:9px;padding:11px 14px;border-top:1px solid var(--border)}
+.chat-input-row .input{flex:1;padding:11px 13px;font-size:.88rem}
+.send-btn{width:40px;height:40px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;color:#fff;font-size:.95rem;flex-shrink:0;transition:var(--ease);border:none;cursor:pointer}
+.send-btn:hover{background:var(--primary-dark)}
+.suggestions{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px}
+.suggestion-chip{padding:7px 13px;border-radius:99px;background:var(--surface);border:1.5px solid var(--border);font-size:.8rem;color:var(--text2);font-weight:500;cursor:pointer;transition:var(--ease)}
+.suggestion-chip:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-light)}
+.typing-dot{width:7px;height:7px;border-radius:50%;background:var(--text3);animation:tdot 1.2s infinite}
+.typing-dot:nth-child(2){animation-delay:.2s}
+.typing-dot:nth-child(3){animation-delay:.4s}
+@keyframes tdot{0%,100%{opacity:.3;transform:translateY(0)}50%{opacity:1;transform:translateY(-4px)}}
+
+/* ================================================================
+   ADMIN
+================================================================ */
+.admin-stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:11px;margin-bottom:18px}
+.admin-stat{background:var(--surface);border-radius:var(--rs);padding:16px;border:1px solid var(--border)}
+.admin-stat .as-ico{font-size:1.4rem;margin-bottom:7px}
+.admin-stat .as-label{font-size:.72rem;color:var(--text2);font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px}
+.admin-stat .as-value{font-family:var(--fd);font-size:1.55rem;font-weight:700}
+.admin-stat .as-trend{font-size:.73rem;color:var(--green);margin-top:2px;font-weight:600}
+.students-table{width:100%;border-collapse:collapse}
+.students-table th{font-size:.72rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;padding:10px 14px;border-bottom:2px solid var(--border);text-align:left;background:var(--surface2)}
+.students-table td{padding:12px 14px;border-bottom:1px solid var(--border);font-size:.86rem;vertical-align:middle}
+.students-table tbody tr:last-child td{border-bottom:none}
+.students-table tbody tr:hover td{background:var(--surface2)}
+.tbl-wrap{overflow-x:auto}
+.coll-progress-wrap{margin:10px 0}
+.coll-progress-label{display:flex;justify-content:space-between;margin-bottom:5px;font-size:.78rem;font-weight:600;color:var(--text2)}
+
+/* ================================================================
+   FEE MODULE
+================================================================ */
+.fee-tbl{width:100%;border-collapse:collapse}
+.fee-tbl th{padding:11px 14px;text-align:left;font-size:.74rem;font-weight:700;color:var(--text2);background:var(--surface2);border-bottom:2px solid var(--border)}
+.fee-tbl td{padding:12px 14px;border-bottom:1px solid var(--border);font-size:.87rem}
+.fee-tbl tbody tr:last-child td{border-bottom:none}
+.fee-tbl .total-row td{font-weight:700;color:var(--primary);background:var(--primary-light)}
+.student-fee-summary{background:var(--surface2);border-radius:var(--rs);padding:14px;border:1px solid var(--border);margin-bottom:14px}
+.rp-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px dashed var(--border)}
+.rp-row:last-child{border-bottom:none}
+.rp-row .rl{font-size:.82rem;color:var(--text2)}
+.rp-row .rr{font-weight:700;font-size:.9rem}
+.pay-preview{background:var(--primary-light);border-radius:var(--rs);padding:14px;border:1px solid var(--border2);margin-bottom:14px}
+.method-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:99px;font-size:.71rem;font-weight:700}
+.method-mpesa{background:var(--green-light);color:#15803D}
+.method-cash{background:var(--amber-light);color:#B45309}
+.method-bank{background:var(--primary-light);color:var(--primary-dark)}
+.method-cheque{background:var(--purple-light);color:#6D28D9}
+.fee-row-ed{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:center;margin-bottom:8px}
+
+/* ================================================================
+   RECEIPT
+================================================================ */
+.receipt{background:var(--surface);border-radius:var(--r);border:2px solid var(--border);overflow:hidden;box-shadow:var(--md)}
+.receipt-header{background:linear-gradient(135deg,var(--primary),var(--primary-dark));padding:22px 18px;color:#fff;text-align:center;position:relative;overflow:hidden}
+.receipt-header::before{content:'';position:absolute;top:-30px;right:-30px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,.08)}
+.receipt-school{font-size:.77rem;opacity:.8;margin-bottom:2px}
+.receipt-title{font-family:var(--fd);font-size:1.5rem;font-weight:600;margin-bottom:2px}
+.receipt-id{font-size:.75rem;opacity:.75;font-weight:700;letter-spacing:.08em}
+.receipt-stamp{position:absolute;top:14px;right:14px;width:52px;height:52px;border:2.5px solid rgba(255,255,255,.35);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.56rem;font-weight:700;color:rgba(255,255,255,.7);text-align:center;line-height:1.2;text-transform:uppercase;letter-spacing:.04em}
+.receipt-body{padding:18px}
+.receipt-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px dashed var(--border)}
+.receipt-row:last-child{border-bottom:none}
+.receipt-row .rl{font-size:.8rem;color:var(--text2);font-weight:500}
+.receipt-row .rr{font-size:.86rem;font-weight:700;color:var(--text)}
+.receipt-total{background:var(--surface2);border-top:2px solid var(--border);padding:15px 18px;display:flex;justify-content:space-between;align-items:center}
+.receipt-total .rt-lbl{font-weight:700;font-size:.88rem;color:var(--text2)}
+.receipt-total .rt-val{font-size:1.25rem;font-weight:700;color:var(--green)}
+.receipt-balance{background:var(--surface3);padding:11px 18px;display:flex;justify-content:space-between;align-items:center}
+.receipt-balance .rb-lbl{font-size:.8rem;color:var(--text2);font-weight:600}
+.receipt-balance .rb-val{font-size:.95rem;font-weight:700}
+.receipt-footer{padding:13px 18px;text-align:center;font-size:.73rem;color:var(--text3);border-top:1px solid var(--border)}
+.receipt-footer strong{color:var(--primary)}
+.barcode{display:flex;justify-content:center;gap:1px;align-items:flex-end;height:26px;margin:8px auto 0}
+.barcode-bar{border-radius:1px;background:var(--border2)}
+.sms-panel{background:linear-gradient(135deg,#0F2027,#203A43);border-radius:var(--r);padding:16px;color:#fff;margin-top:14px}
+.sms-panel-head{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.sms-icon{width:38px;height:38px;background:rgba(255,255,255,.12);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:1.1rem}
+.sms-panel h3{font-size:.92rem;font-weight:700;margin-bottom:1px}
+.sms-panel p{font-size:.75rem;opacity:.65}
+.sms-preview{background:rgba(255,255,255,.08);border-radius:var(--rs);padding:11px;font-size:.78rem;line-height:1.55;opacity:.85;margin-bottom:13px;border-left:3px solid rgba(255,255,255,.2)}
+.sms-send-btn{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.2);border-radius:var(--rs);padding:12px;width:100%;font-weight:600;font-size:.88rem;font-family:var(--f);cursor:pointer;transition:var(--ease);display:flex;align-items:center;justify-content:center;gap:7px}
+.sms-send-btn:hover{background:rgba(255,255,255,.22)}
+
+/* ================================================================
+   MODALS
+================================================================ */
+.modal-overlay{position:fixed;inset:0;background:rgba(10,20,50,.52);z-index:500;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s;backdrop-filter:blur(5px)}
+.modal-overlay.active{opacity:1;pointer-events:all}
+.modal-sheet{width:100%;max-width:520px;background:var(--surface);border-radius:var(--r) var(--r) 0 0;padding:0 0 28px;transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);max-height:92vh;overflow-y:auto}
+.modal-overlay.active .modal-sheet{transform:translateY(0)}
+.modal-handle{width:40px;height:4px;background:var(--border2);border-radius:99px;margin:13px auto 0}
+.modal-head{padding:15px 20px 13px;border-bottom:1px solid var(--border)}
+.modal-head h2{font-size:1.08rem;font-weight:700;color:var(--text)}
+.modal-head p{font-size:.8rem;color:var(--text2);margin-top:3px}
+.modal-body{padding:18px 20px}
+.modal-foot{padding:0 20px;display:flex;flex-direction:column;gap:9px}
+
+/* ================================================================
+   TOAST
+================================================================ */
+.toast-wrap{position:fixed;top:70px;left:50%;transform:translateX(-50%);z-index:999;display:flex;flex-direction:column;align-items:center;gap:7px;pointer-events:none;width:90%;max-width:370px}
+.toast{background:var(--text);color:#fff;padding:11px 16px;border-radius:var(--rs);font-size:.84rem;font-weight:500;box-shadow:var(--lg);pointer-events:all;display:flex;align-items:center;gap:8px;width:100%;animation:toastIn .25s ease forwards}
+.toast.success{background:var(--green)}
+.toast.error{background:var(--red)}
+.toast.info{background:var(--primary)}
+@keyframes toastIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+
+/* ================================================================
+   UTILS
+================================================================ */
+.flex{display:flex}.items-center{align-items:center}.justify-between{justify-content:space-between}
+.gap-8{gap:8px}.gap-10{gap:10px}.gap-12{gap:12px}
+.mb-4{margin-bottom:4px}.mb-8{margin-bottom:8px}.mb-12{margin-bottom:12px}
+.mb-16{margin-bottom:16px}.mb-20{margin-bottom:20px}
+.mt-4{margin-top:4px}.mt-8{margin-top:8px}.mt-12{margin-top:12px}.mt-16{margin-top:16px}
+.fw-bold{font-weight:700}.fw-semi{font-weight:600}
+.text-primary{color:var(--primary)}.text-success{color:var(--green)}.text-danger{color:var(--red)}.text-warning{color:var(--amber)}
+.text-muted{color:var(--text2)}.text-xs{font-size:.74rem}.text-sm{font-size:.82rem}
+.w-full{width:100%}.hidden{display:none!important}
+.spinner{width:18px;height:18px;border:2.5px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty-state{text-align:center;padding:40px 20px;color:var(--text3)}
+.empty-state .empty-ico{font-size:2.5rem;margin-bottom:10px}
+.empty-state p{font-size:.86rem;line-height:1.5}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeUp .32s ease forwards}
+.fade-in-1{animation-delay:.05s;opacity:0}
+.fade-in-2{animation-delay:.1s;opacity:0}
+.fade-in-3{animation-delay:.15s;opacity:0}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- ══════════════════════════════════════════════
+     LOGIN
+══════════════════════════════════════════════ -->
+<div id="page-login" class="page active">
+  <div class="auth-wrap">
+    <div class="auth-hero fade-in">
+      <div class="auth-logo">🎓</div>
+      <h1>Elim<span>u</span>Connect</h1>
+      <p>Kenya's smart school management system for parents & administrators</p>
+    </div>
+    <div class="auth-card fade-in fade-in-1">
+      <h2>Welcome Back 👋</h2>
+      <p>Sign in to access your dashboard.</p>
+      <div class="role-pills">
+        <div class="role-pill active" onclick="setRole('parent',this)">👨‍👩‍👧 Parent</div>
+        <div class="role-pill" onclick="setRole('admin',this)">🏫 Admin</div>
+      </div>
+      <div class="field mb-16">
+        <label>Phone Number</label>
+        <div class="phone-row">
+          <div class="phone-prefix">🇰🇪 +254</div>
+          <input class="input" id="login-phone" type="tel" placeholder="712 345 678" maxlength="9"/>
+        </div>
+        <span class="input-hint">We'll send a verification code via SMS</span>
+      </div>
+      <button class="btn btn-primary btn-full btn-lg" onclick="goToOTP()">Get OTP Code →</button>
+      <div class="divider">or</div>
+      <button class="btn btn-outline btn-full">Continue with Google</button>
+      <div class="auth-switch mt-12">New? <a href="#" onclick="alert('Contact your school admin to register.')">Contact School</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     OTP
+══════════════════════════════════════════════ -->
+<div id="page-otp" class="page">
+  <div class="auth-wrap">
+    <div class="auth-hero fade-in">
+      <div class="auth-logo">📱</div>
+      <h1>Verify OTP</h1>
+      <p>4-digit code sent to <strong id="otp-phone-display">+254 712 345 678</strong></p>
+    </div>
+    <div class="auth-card fade-in fade-in-1">
+      <h2>Enter Code</h2>
+      <p>Demo code: <strong>1234</strong></p>
+      <div class="otp-inputs">
+        <input class="otp-input" type="number" maxlength="1" oninput="otpInput(this,0)"/>
+        <input class="otp-input" type="number" maxlength="1" oninput="otpInput(this,1)"/>
+        <input class="otp-input" type="number" maxlength="1" oninput="otpInput(this,2)"/>
+        <input class="otp-input" type="number" maxlength="1" oninput="otpInput(this,3)"/>
+      </div>
+      <button class="btn btn-primary btn-full btn-lg mt-16" onclick="verifyOTP()">Verify & Login</button>
+      <div class="auth-switch mt-12">Didn't receive? <a href="#" onclick="showToast('OTP resent!','info')">Resend OTP</a></div>
+      <div class="auth-switch mt-8"><a href="#" onclick="showPage('page-login')">← Back</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     PARENT APP
+══════════════════════════════════════════════ -->
+<div id="page-parent-app" class="page">
+
+  <!-- Drawer Overlay -->
+  <div class="drawer-overlay" id="p-overlay" onclick="closeDrawer('p')"></div>
+
+  <!-- Drawer -->
+  <div class="drawer" id="p-drawer">
+    <div class="drawer-header">
+      <div class="drawer-avatar">👩</div>
+      <div>
+        <div class="drawer-user-name">Jane Mwangi</div>
+        <div class="drawer-user-sub">Parent · Class 4B</div>
+      </div>
+    </div>
+    <div class="drawer-nav">
+
+      <!-- DASHBOARD -->
+      <div class="drawer-section-label">Dashboard</div>
+      <div class="drawer-item active" id="pdrawer-dashboard" onclick="parentNav('dashboard')">
+        <div class="drawer-item-ico">👤</div>
+        <span class="drawer-item-label">Personal Profile</span>
+      </div>
+
+      <!-- ACADEMICS -->
+      <div class="drawer-section-label">Academics</div>
+      <div class="drawer-item" id="pdrawer-learning" onclick="parentNav('learning')">
+        <div class="drawer-item-ico">🎓</div>
+        <span class="drawer-item-label">Course Registration</span>
+      </div>
+      <div class="drawer-item" id="pdrawer-ai" onclick="parentNav('ai')">
+        <div class="drawer-item-ico">📋</div>
+        <span class="drawer-item-label">Academic Requisition</span>
+      </div>
+      <div class="drawer-item" id="pdrawer-results" onclick="parentNav('results')">
+        <div class="drawer-item-ico">🎬</div>
+        <span class="drawer-item-label">Course Evaluation</span>
+      </div>
+
+      <!-- FINANCIALS -->
+      <div class="drawer-section-label">Financials</div>
+      <div class="drawer-item" id="pdrawer-fees" onclick="parentNav('fees')">
+        <div class="drawer-item-ico">🧾</div>
+        <span class="drawer-item-label">Fee Statement</span>
+      </div>
+      <div class="drawer-item" id="pdrawer-receipts" onclick="parentNav('receipts')">
+        <div class="drawer-item-ico">🗂️</div>
+        <span class="drawer-item-label">Receipts</span>
+      </div>
+      <div class="drawer-item" id="pdrawer-fee-structure" onclick="parentNav('fee-structure')">
+        <div class="drawer-item-ico">📐</div>
+        <span class="drawer-item-label">Fee Structure</span>
+      </div>
+      <div class="drawer-item" id="pdrawer-legacy" onclick="parentNav('legacy')">
+        <div class="drawer-item-ico">📜</div>
+        <span class="drawer-item-label">Legacy Statement</span>
+      </div>
+
+      <!-- EXAMINATION -->
+      <div class="drawer-section-label">Examination</div>
+      <div class="drawer-item" id="pdrawer-examcard" onclick="parentNav('examcard')">
+        <div class="drawer-item-ico">🎫</div>
+        <span class="drawer-item-label">Exam Card</span>
+      </div>
+      <div class="drawer-item" id="pdrawer-transcript" onclick="parentNav('transcript')">
+        <div class="drawer-item-ico">📄</div>
+        <span class="drawer-item-label">Transcript</span>
+      </div>
+
+      <!-- SETTINGS -->
+      <div class="drawer-section-label">Settings</div>
+      <div class="drawer-item" id="pdrawer-notifications" onclick="parentNav('notifications')">
+        <div class="drawer-item-ico">🔔</div>
+        <span class="drawer-item-label">Notifications</span>
+      </div>
+      <div class="drawer-item" onclick="showToast('Settings coming soon','info')">
+        <div class="drawer-item-ico">⚙️</div>
+        <span class="drawer-item-label">App Settings</span>
+      </div>
+    </div>
+    <div class="drawer-footer">
+      <div class="drawer-logout" onclick="logout()">
+        <span style="font-size:1.1rem;">🚪</span>
+        <span>Logout</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top Bar -->
+  <nav class="topbar">
+    <div class="topbar-left">
+      <div class="hamburger" onclick="openDrawer('p')">
+        <span></span><span></span><span></span>
+      </div>
+      <div class="topbar-title" id="p-topbar-title">ElimuConnect <span>· Parent</span></div>
+    </div>
+    <div class="topbar-right">
+      <div class="notif-btn" onclick="parentNav('notifications')">
+        🔔<span class="notif-dot" id="p-notif-dot"></span>
+      </div>
+      <div class="avatar-circle"><div class="avatar-initials">JM</div></div>
+    </div>
+  </nav>
+
+  <!-- Pages Container -->
+  <div id="parent-pages" style="flex:1;overflow:hidden;">
+
+    <!-- DASHBOARD / PERSONAL PROFILE -->
+    <div id="parent-dashboard" class="scroll-area" style="display:block;">
+      <div class="greeting-banner fade-in">
+        <div class="greet">Good morning ☀️</div>
+        <h2>Jane Mwangi</h2>
+        <div class="student-chip">🧑‍🎓 Amara Mwangi &nbsp;·&nbsp; Class 4B</div>
+      </div>
+      <div class="stat-grid fade-in fade-in-1">
+        <div class="stat-card fee-hero-card" onclick="parentNav('fees')">
+          <div class="st-label">💰 Fee Balance Due</div>
+          <div class="st-value" id="p-dash-balance">KSh 8,500</div>
+          <div class="st-sub">Term 2, 2025 · Due: 30 Sep</div>
+          <button class="btn btn-success btn-sm mt-12" onclick="event.stopPropagation();openPayModal()">Pay Now →</button>
+        </div>
+        <div class="stat-card">
+          <div class="st-label">📊 Average Score</div>
+          <div class="st-value text-primary">78%</div>
+          <div class="st-sub">Last exam</div>
+        </div>
+        <div class="stat-card">
+          <div class="st-label">📚 Lessons Today</div>
+          <div class="st-value">4</div>
+          <div class="st-sub">2 completed</div>
+        </div>
+      </div>
+      <div class="card fade-in fade-in-1 mb-16" id="p-dash-latest-receipt" style="display:none;">
+        <div class="card-header"><h3>🧾 Latest Receipt</h3><span class="badge badge-success">Confirmed</span></div>
+        <div class="card-body" id="p-dash-receipt-body"></div>
+      </div>
+      <div class="card fade-in fade-in-2 mb-16">
+        <div class="card-header"><h3>📝 Recent Results</h3><a href="#" onclick="parentNav('results')">View all</a></div>
+        <div class="card-body">
+          <div class="result-row"><span class="subj">Mathematics</span><div class="score-bar"><div class="score-fill" style="width:82%;background:var(--green)"></div></div><span class="score-label text-success">82%</span></div>
+          <div class="result-row"><span class="subj">English</span><div class="score-bar"><div class="score-fill" style="width:75%;background:var(--primary)"></div></div><span class="score-label text-primary">75%</span></div>
+          <div class="result-row"><span class="subj">Science</span><div class="score-bar"><div class="score-fill" style="width:68%;background:var(--amber)"></div></div><span class="score-label text-warning">68%</span></div>
+        </div>
+      </div>
+      <div class="card fade-in fade-in-3 mb-16">
+        <div class="card-header"><h3>📖 Today's Learning</h3><a href="#" onclick="parentNav('learning')">View all</a></div>
+        <div class="card-body">
+          <div class="lesson-item" onclick="parentNav('learning')" style="padding:10px 0;">
+            <div class="lesson-thumb" style="background:var(--primary-light);">➗</div>
+            <div><div class="l-title">Fractions – Part 2</div><div class="l-meta">Mathematics · Completed</div><span class="badge badge-success mt-4">Done ✓</span></div>
+          </div>
+          <div class="lesson-item" onclick="parentNav('learning')" style="padding:10px 0;">
+            <div class="lesson-thumb" style="background:var(--amber-light);">🔬</div>
+            <div><div class="l-title">States of Matter</div><div class="l-meta">Science · In Progress</div><span class="badge badge-warning mt-4">In Progress</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="card fade-in">
+        <div class="card-header"><h3>🔔 Notifications</h3><a href="#" onclick="parentNav('notifications')">See all</a></div>
+        <div class="card-body">
+          <div class="notif-item"><div class="notif-ico" style="background:var(--amber-light);">💰</div><div class="notif-info"><div class="notif-title">Fee Reminder</div><div class="notif-body">KSh 8,500 balance due by 30th September</div><div class="notif-time">2 hours ago</div></div></div>
+          <div class="notif-item"><div class="notif-ico" style="background:var(--green-light);">📊</div><div class="notif-info"><div class="notif-title">Results Published</div><div class="notif-body">Mid-term exam results are now available</div><div class="notif-time">Yesterday</div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FEE STATEMENT -->
+    <div id="parent-fees" class="scroll-area" style="display:none;">
+      <div class="fees-hero fade-in">
+        <div class="f-label">Total Term Fees</div>
+        <div class="f-amount" id="pf-total-amount">KSh 25,000</div>
+        <div class="fees-breakdown">
+          <div class="fee-stat"><div class="fs-label">Paid</div><div class="fs-val" id="pf-paid-val">KSh 16,500</div></div>
+          <div class="fee-stat"><div class="fs-label">Balance</div><div class="fs-val" id="pf-balance-val">KSh 8,500</div></div>
+          <div class="fee-stat"><div class="fs-label">Due Date</div><div class="fs-val">30 Sep</div></div>
+        </div>
+      </div>
+      <div class="card fade-in fade-in-1 mb-16">
+        <div class="card-body">
+          <div class="flex items-center justify-between mb-12">
+            <div><div class="fw-bold mb-4">Payment Progress</div><div class="text-sm text-muted" id="pf-progress-label">66% of term fees paid</div></div>
+            <svg width="60" height="60" style="transform:rotate(-90deg);">
+              <circle fill="none" stroke="var(--surface2)" stroke-width="8" cx="30" cy="30" r="22"/>
+              <circle id="pf-progress-ring" fill="none" stroke="var(--green)" stroke-width="8" stroke-linecap="round" cx="30" cy="30" r="22" stroke-dasharray="138.23" stroke-dashoffset="47"/>
+            </svg>
+          </div>
+          <div class="progress-bar"><div class="progress-fill green" id="pf-progress-bar" style="width:66%"></div></div>
+        </div>
+      </div>
+      <button class="mpesa-btn fade-in fade-in-1 mb-20" onclick="openPayModal()">
+        <span class="mpesa-logo">M-PESA</span> Pay <span id="pf-pay-btn-amt">KSh 8,500</span> via M-Pesa
+      </button>
+      <div class="card fade-in fade-in-2 mb-16">
+        <div class="card-body flex items-center gap-12">
+          <div style="width:42px;height:42px;background:var(--primary-light);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;">📐</div>
+          <div style="flex:1;"><div class="fw-semi text-sm">Class 4B Fee Structure</div><div class="text-xs text-muted">Term 2, 2025 · KSh 25,000/term</div></div>
+          <button class="btn btn-outline btn-sm" onclick="parentNav('fee-structure')">View →</button>
+        </div>
+      </div>
+      <div class="card fade-in fade-in-3">
+        <div class="card-header"><h3>💳 Payment History</h3><button class="btn btn-ghost btn-sm" onclick="parentNav('receipts')">All Receipts 🧾</button></div>
+        <div class="card-body" id="parent-payment-history"></div>
+      </div>
+    </div>
+
+    <!-- RECEIPTS -->
+    <div id="parent-receipts" class="scroll-area" style="display:none;">
+      <div class="section-hd fade-in"><div><h2>🗂️ Receipts</h2><div class="section-sub">All payment receipts for Amara Mwangi</div></div></div>
+      <div id="parent-receipts-list"></div>
+    </div>
+
+    <!-- FEE STRUCTURE -->
+    <div id="parent-fee-structure" class="scroll-area" style="display:none;">
+      <div class="section-hd fade-in">
+        <div><h2>📐 Fee Structure</h2><div class="section-sub">Class 4B · Term 2, 2025</div></div>
+        <button class="btn btn-outline btn-sm" onclick="showToast('PDF download — backend integration pending','info')">⬇ PDF</button>
+      </div>
+      <div class="card fade-in fade-in-1 mb-16">
+        <div class="card-header"><h3>Class 4B – Term Fees</h3><span class="badge badge-primary">Term 2, 2025</span></div>
+        <div style="overflow-x:auto;"><table class="fee-tbl"><thead><tr><th>Fee Item</th><th>Per Term (KSh)</th><th>Per Year (KSh)</th><th>Notes</th></tr></thead><tbody id="parent-fee-tbl-body"></tbody></table></div>
+        <div class="card-footer"><span class="text-sm text-muted">Last updated by Admin Kamau · 2 Aug 2025</span></div>
+      </div>
+    </div>
+
+    <!-- LEGACY STATEMENT -->
+    <div id="parent-legacy" class="scroll-area" style="display:none;">
+      <div class="section-hd fade-in"><div><h2>📜 Legacy Statement</h2><div class="section-sub">Historical fee records</div></div></div>
+      <div class="card fade-in fade-in-1">
+        <div class="card-header"><h3>Previous Terms</h3></div>
+        <div class="card-body">
+          <div class="ph-item"><div class="ph-ico" style="background:var(--green-light);">✅</div><div class="ph-info"><div class="ph-name">Term 1, 2025</div><div class="ph-meta">Total: KSh 25,000 · Fully Paid</div></div><div class="ph-right"><div class="ph-amount">KSh 25,000</div><span class="badge badge-success">Cleared</span></div></div>
+          <div class="ph-item"><div class="ph-ico" style="background:var(--green-light);">✅</div><div class="ph-info"><div class="ph-name">Term 3, 2024</div><div class="ph-meta">Total: KSh 24,000 · Fully Paid</div></div><div class="ph-right"><div class="ph-amount">KSh 24,000</div><span class="badge badge-success">Cleared</span></div></div>
+          <div class="ph-item"><div class="ph-ico" style="background:var(--green-light);">✅</div><div class="ph-info"><div class="ph-name">Term 2, 2024</div><div class="ph-meta">Total: KSh 24,000 · Fully Paid</div></div><div class="ph-right"><div class="ph-amount">KSh 24,000</div><span class="badge badge-success">Cleared</span></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- EXAM CARD -->
+    <div id="parent-examcard" class="scroll-area" style="display:none;">
+      <div class="section-hd fade-in"><div><h2>🎫 Exam Card</h2><div class="section-sub">Amara Mwangi · Class 4B</div></div></div>
+      <div class="card fade-in fade-in-1" style="overflow:hidden;">
+        <div style="background:linear-gradient(135deg,#1B4332,#22C55E);padding:20px;color:#fff;">
+          <div style="font-size:.72rem;opacity:.75;margin-bottom:2px;">ST. MARY'S PRIMARY SCHOOL</div>
+          <div style="font-family:var(--fd);font-size:1.3rem;font-weight:700;margin-bottom:2px;">Exam Admission Card</div>
+          <div style="font-size:.78rem;opacity:.7;">Mid-Term Examinations · Term 2, 2025</div>
+        </div>
+        <div class="card-body">
+          <div class="rp-row"><span class="rl">Student Name</span><span class="rr">Amara Mwangi</span></div>
+          <div class="rp-row"><span class="rl">Admission No.</span><span class="rr">STM/4B/021</span></div>
+          <div class="rp-row"><span class="rl">Class</span><span class="rr">Class 4B</span></div>
+          <div class="rp-row"><span class="rl">Exam Period</span><span class="rr">14 – 18 Oct 2025</span></div>
+          <div class="rp-row"><span class="rl">Fee Status</span><span class="rr"><span class="badge badge-warning">Partial – KSh 8,500 due</span></span></div>
+        </div>
+        <div class="card-footer" style="background:var(--amber-light);">
+          <div class="text-sm text-warning fw-semi">⚠️ Clear fee balance to unlock full exam card</div>
+        </div>
+      </div>
+      <button class="btn btn-primary btn-full mt-16" onclick="showToast('Pay fees to download exam card','info')">⬇ Download Exam Card</button>
+    </div>
+
+    <!-- TRANSCRIPT -->
+    <div id="parent-transcript" class="scroll-area" style="display:none;">
+      <div class="section-hd fade-in"><div><h2>📄 Transcript</h2><div class="section-sub">Academic record – Amara Mwangi</div></div></div>
+      <div class="card fade-in fade-in-1 mb-16">
+        <div class="card-body" style="text-align:center;padding:32px 20px;">
+          <div style="font-size:2.5rem;margin-bottom:12px;">📄</div>
+          <div class="fw-bold mb-8">Official Transcript</div>
+          <div class="text-sm text-muted mb-16">Contains complete academic record across all terms. Available for students with no fee arrears.</div>
+          <span class="badge badge-warning mb-16">Fee balance must be cleared</span><br/>
+          <button class="btn btn-outline mt-12" onclick="showToast('Clear fees to request transcript','info')">Request Transcript</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- COURSE EVALUATION (RESULTS) -->
+    <div id="parent-results" class="scroll-area" style="display:none;">
+      <div class="results-header fade-in"><h2>📊 Course Evaluation</h2><p>Class 4B · Term 2, 2025</p><div class="results-gpa">78%</div><span class="badge" style="background:rgba(255,255,255,.2);color:#fff;">⭐ Good Performance</span></div>
+      <div id="results-list" class="fade-in fade-in-1"></div>
+    </div>
+
+    <!-- COURSE / LEARNING -->
+    <div id="parent-learning" class="scroll-area" style="display:none;">
+      <div id="lesson-list-view">
+        <div class="section-hd fade-in"><h2>📚 Course / Learning</h2><span class="badge badge-primary">Term 2</span></div>
+        <div class="tab-bar mb-16"><div class="tab-btn active">All</div><div class="tab-btn">Today</div><div class="tab-btn">Completed</div></div>
+        <div class="card fade-in"><div class="card-body" id="lessons-list"></div></div>
+      </div>
+      <div id="lesson-detail-view" style="display:none;">
+        <button class="btn btn-ghost mb-16" onclick="backToLessons()">← Back</button>
+        <div class="card fade-in"><div class="card-body">
+          <div class="lesson-video"><div class="play-btn">▶️</div></div>
+          <h2 id="lesson-detail-title" style="font-family:var(--fd);font-size:1.15rem;font-weight:700;margin-bottom:7px;"></h2>
+          <div class="flex gap-8 mb-16"><span class="badge badge-primary" id="lesson-detail-subject"></span><span class="badge badge-gray" id="lesson-detail-date"></span></div>
+          <div class="lesson-content-text" id="lesson-detail-content"></div>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- AI TUTOR -->
+    <div id="parent-ai" class="scroll-area" style="display:none;">
+      <div class="ai-hero fade-in">
+        <div class="ai-avatar">🤖</div>
+        <div><h2>AI Tutor</h2><p>Ask about Amara's lessons & get explanations</p><span class="ai-online"><span class="ai-dot"></span> Online & Ready</span></div>
+      </div>
+      <div class="suggestions fade-in fade-in-1">
+        <div class="suggestion-chip" onclick="sendSuggestion('Explain today\'s math lesson on fractions')">Explain today's math lesson</div>
+        <div class="suggestion-chip" onclick="sendSuggestion('Give revision questions for Science')">Give revision questions</div>
+        <div class="suggestion-chip" onclick="sendSuggestion('What topics should Amara focus on?')">What to focus on?</div>
+        <div class="suggestion-chip" onclick="sendSuggestion('How is Amara performing overall?')">Overall performance?</div>
+      </div>
+      <div class="chat-container fade-in fade-in-2">
+        <div class="chat-messages" id="chat-messages">
+          <div class="chat-msg ai"><div class="chat-bubble">👋 Hello! I'm Amara's AI Tutor. I can explain lessons, give practice questions, and help you support her learning. What would you like to know?</div><span class="chat-time">Just now</span></div>
+        </div>
+        <div class="chat-input-row">
+          <input class="input" id="chat-input" placeholder="Ask about Amara's learning..." onkeypress="if(event.key==='Enter')sendChat()"/>
+          <button class="send-btn" onclick="sendChat()">➤</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- NOTIFICATIONS -->
+    <div id="parent-notifications" class="scroll-area" style="display:none;">
+      <div class="section-hd fade-in"><h2>🔔 Notifications</h2><button class="btn btn-ghost btn-sm" onclick="markAllRead()">Mark all read</button></div>
+      <div id="notifications-list"></div>
+    </div>
+
+  </div><!-- /parent-pages -->
+</div><!-- /parent-app -->
+
+<!-- ══════════════════════════════════════════════
+     ADMIN APP
+══════════════════════════════════════════════ -->
+<div id="page-admin-app" class="page">
+
+  <!-- Drawer Overlay -->
+  <div class="drawer-overlay" id="a-overlay" onclick="closeDrawer('a')"></div>
+
+  <!-- Admin Drawer -->
+  <div class="drawer" id="a-drawer">
+    <div class="drawer-header" style="background:#B71C1C;">
+      <div class="drawer-avatar">👨‍💼</div>
+      <div>
+        <div class="drawer-user-name">Admin Kamau</div>
+        <div class="drawer-user-sub">Bursar · St. Mary's Primary</div>
+      </div>
+    </div>
+    <div class="drawer-nav">
+
+      <!-- DASHBOARD -->
+      <div class="drawer-section-label">Dashboard</div>
+      <div class="drawer-item active" id="adrawer-dashboard" onclick="adminNav('dashboard')">
+        <div class="drawer-item-ico">🏠</div>
+        <span class="drawer-item-label">Overview</span>
+      </div>
+      <div class="drawer-item" id="adrawer-students" onclick="adminNav('students')">
+        <div class="drawer-item-ico">👤</div>
+        <span class="drawer-item-label">Student Profiles</span>
+      </div>
+
+      <!-- ACADEMICS -->
+      <div class="drawer-section-label">Academics</div>
+      <div class="drawer-item" id="adrawer-lessons" onclick="adminNav('lessons')">
+        <div class="drawer-item-ico">🎓</div>
+        <span class="drawer-item-label">Course Registration</span>
+      </div>
+      <div class="drawer-item" onclick="showToast('Academic Requisition — coming soon','info')">
+        <div class="drawer-item-ico">📋</div>
+        <span class="drawer-item-label">Academic Requisition</span>
+      </div>
+      <div class="drawer-item" id="adrawer-results" onclick="adminNav('results')">
+        <div class="drawer-item-ico">🎬</div>
+        <span class="drawer-item-label">Course Evaluation</span>
+      </div>
+
+      <!-- FINANCIALS -->
+      <div class="drawer-section-label">Financials</div>
+      <div class="drawer-item" id="adrawer-record" onclick="adminNav('record')">
+        <div class="drawer-item-ico">🧾</div>
+        <span class="drawer-item-label">Fee Statement / Record</span>
+      </div>
+      <div class="drawer-item" id="adrawer-history" onclick="adminNav('history')">
+        <div class="drawer-item-ico">🗂️</div>
+        <span class="drawer-item-label">Receipts</span>
+      </div>
+      <div class="drawer-item" id="adrawer-fee-structure" onclick="adminNav('fee-structure')">
+        <div class="drawer-item-ico">📐</div>
+        <span class="drawer-item-label">Fee Structure</span>
+      </div>
+      <div class="drawer-item" onclick="showToast('Legacy statements — Supabase integration pending','info')">
+        <div class="drawer-item-ico">📜</div>
+        <span class="drawer-item-label">Legacy Statement</span>
+      </div>
+
+      <!-- EXAMINATION -->
+      <div class="drawer-section-label">Examination</div>
+      <div class="drawer-item" onclick="showToast('Exam card management — coming soon','info')">
+        <div class="drawer-item-ico">🎫</div>
+        <span class="drawer-item-label">Exam Cards</span>
+      </div>
+      <div class="drawer-item" onclick="showToast('Transcript management — coming soon','info')">
+        <div class="drawer-item-ico">📄</div>
+        <span class="drawer-item-label">Transcripts</span>
+      </div>
+
+      <!-- SETTINGS -->
+      <div class="drawer-section-label">Settings</div>
+      <div class="drawer-item" onclick="showToast('Settings — coming soon','info')">
+        <div class="drawer-item-ico">⚙️</div>
+        <span class="drawer-item-label">System Settings</span>
+      </div>
+    </div>
+    <div class="drawer-footer">
+      <div class="drawer-logout" onclick="logout()">
+        <span style="font-size:1.1rem;">🚪</span>
+        <span>Logout</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin Top Bar -->
+  <nav class="topbar" style="background:#B71C1C;">
+    <div class="topbar-left">
+      <div class="hamburger" onclick="openDrawer('a')">
+        <span></span><span></span><span></span>
+      </div>
+      <div class="topbar-title" id="a-topbar-title">ElimuConnect <span>· Admin</span></div>
+    </div>
+    <div class="topbar-right">
+      <div class="notif-btn" style="background:rgba(255,255,255,.15);">🔔</div>
+      <div class="avatar-circle" style="background:rgba(255,255,255,.9);" onclick="openDrawer('a')"><div class="avatar-initials" style="color:#B71C1C;">AK</div></div>
+    </div>
+  </nav>
+
+  <div id="admin-pages" style="flex:1;overflow:hidden;">
+
+    <!-- ADMIN DASHBOARD -->
+    <div id="admin-dashboard" class="scroll-area" style="display:block;">
+      <div class="section-hd fade-in">
+        <div><h2>Overview</h2><div class="section-sub">St. Mary's Primary · Term 2, 2025</div></div>
+        <button class="btn btn-primary btn-sm" onclick="adminNav('record')">+ Record Payment</button>
+      </div>
+      <div class="admin-stat-grid fade-in fade-in-1">
+        <div class="admin-stat"><div class="as-ico">💰</div><div class="as-label">Total Collected</div><div class="as-value text-primary">KSh 4.2M</div><div class="as-trend">This term</div></div>
+        <div class="admin-stat"><div class="as-ico">⚠️</div><div class="as-label">Outstanding</div><div class="as-value text-danger">KSh 1.8M</div><div class="as-trend" style="color:var(--red);">98 students</div></div>
+        <div class="admin-stat"><div class="as-ico">✅</div><div class="as-label">Fully Paid</div><div class="as-value">244</div><div class="as-trend">students</div></div>
+        <div class="admin-stat"><div class="as-ico">🕐</div><div class="as-label">Partial/Unpaid</div><div class="as-value">98</div><div class="as-trend" style="color:var(--amber);">students</div></div>
+      </div>
+      <div class="card fade-in fade-in-2 mb-16">
+        <div class="card-header"><h3>📈 Collection Progress</h3><span class="badge badge-primary">Term 2</span></div>
+        <div class="card-body">
+          <div class="coll-progress-wrap"><div class="coll-progress-label"><span>Overall Collection</span><span class="text-primary">70%</span></div><div class="progress-bar"><div class="progress-fill blue" style="width:70%"></div></div></div>
+          <div class="coll-progress-wrap"><div class="coll-progress-label"><span>Tuition Fees</span><span class="text-success">78%</span></div><div class="progress-bar"><div class="progress-fill green" style="width:78%"></div></div></div>
+          <div class="coll-progress-wrap"><div class="coll-progress-label"><span>Lunch Fees</span><span class="text-warning">55%</span></div><div class="progress-bar"><div class="progress-fill amber" style="width:55%"></div></div></div>
+        </div>
+      </div>
+      <div class="card fade-in fade-in-2 mb-16">
+        <div class="card-header"><h3>Quick Actions</h3></div>
+        <div class="card-body" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <button class="btn btn-primary btn-full" onclick="adminNav('record')">💳 Record Payment</button>
+          <button class="btn btn-cyan btn-full" onclick="adminNav('fee-structure')">📐 Fee Structure</button>
+          <button class="btn btn-outline btn-full" onclick="adminNav('history')">📋 All Receipts</button>
+          <button class="btn btn-outline btn-full" onclick="adminNav('students')">👥 Students</button>
+        </div>
+      </div>
+      <div class="card fade-in fade-in-3 mb-16">
+        <div class="card-header"><h3>💳 Recent Payments</h3><button class="btn btn-ghost btn-sm" onclick="adminNav('history')">View all</button></div>
+        <div class="card-body" id="admin-recent-payments"></div>
+      </div>
+      <div class="card fade-in">
+        <div class="card-header"><h3>📋 Recent Activity</h3></div>
+        <div class="card-body">
+          <div class="notif-item"><div class="notif-ico" style="background:var(--green-light);">✅</div><div class="notif-info"><div class="notif-title">New Lesson Created</div><div class="notif-body">Mr. Kamau uploaded "Fractions Part 2" for Class 4B</div><div class="notif-time">4 hours ago</div></div></div>
+          <div class="notif-item"><div class="notif-ico" style="background:var(--amber-light);">📊</div><div class="notif-info"><div class="notif-title">Results Entered</div><div class="notif-body">Mid-term results entered for Class 6B (28 students)</div><div class="notif-time">Yesterday</div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FEE STATEMENT / RECORD PAYMENT -->
+    <div id="admin-record" class="scroll-area" style="display:none;">
+      <div class="section-hd fade-in"><div><h2>Record Payment</h2><div class="section-sub">Manual fee payment entry</div></div></div>
+      <div class="card fade-in fade-in-1">
+        <div class="card-header"><h3>💳 Payment Details</h3></div>
+        <div class="card-body">
+          <div class="field mb-12">
+            <label>Select Student</label>
+            <select class="input" id="rp-student" onchange="updateStudentFeeInfo()"><option value="">— Choose student —</option></select>
+          </div>
+          <div id="student-fee-summary" class="hidden mb-14">
+            <div class="student-fee-summary">
+              <div class="rp-row"><span class="rl">Total Fees</span><span class="rr fw-bold" id="sf-total">—</span></div>
+              <div class="rp-row"><span class="rl">Amount Paid</span><span class="rr text-success" id="sf-paid">—</span></div>
+              <div class="rp-row"><span class="rl fw-semi">Balance Due</span><span class="rr text-danger" id="sf-balance">—</span></div>
+              <div class="progress-bar mt-8"><div class="progress-fill green" id="sf-progress" style="width:0%"></div></div>
+            </div>
+          </div>
+          <div class="form-grid mb-12">
+            <div class="field"><label>Amount (KSh)</label><div class="inp-prefix"><span class="pre-tag">KSh</span><input type="number" id="rp-amount" placeholder="0" oninput="calcPreview()"/></div></div>
+            <div class="field"><label>Payment Method</label><select class="input" id="rp-method"><option value="mpesa">M-Pesa</option><option value="cash">Cash</option><option value="bank">Bank Transfer</option><option value="cheque">Cheque</option></select></div>
+            <div class="field span2"><label>Transaction Code / Reference</label><input class="input" id="rp-ref" placeholder="e.g. QHJ7823K (optional)"/></div>
+            <div class="field"><label>Payment Date</label><input class="input" type="date" id="rp-date"/></div>
+            <div class="field"><label>Notes</label><input class="input" id="rp-notes" placeholder="Optional notes..."/></div>
+          </div>
+          <div id="pay-preview" class="pay-preview hidden mb-14">
+            <div class="text-xs text-muted fw-semi mb-8">PAYMENT PREVIEW</div>
+            <div class="flex justify-between mb-4"><span class="text-sm">Amount Being Paid</span><span class="fw-bold text-primary" id="pp-amount">—</span></div>
+            <div class="flex justify-between"><span class="text-sm">New Balance After</span><span class="fw-bold text-danger" id="pp-newbal">—</span></div>
+          </div>
+          <button class="btn btn-success btn-full btn-lg" onclick="submitPayment()">Record Payment & Generate Receipt ✓</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RECEIPTS / PAYMENT HISTORY -->
+    <div id="admin-history" class="scroll-area" style="display:none;">
+      <div class="section-hd fade-in">
+        <div><h2>🗂️ Receipts</h2><div class="section-sub">All recorded payments</div></div>
+        <button class="btn btn-outline btn-sm" onclick="exportCSV()">⬇ Export CSV</button>
+      </div>
+      <div class="card mb-14 fade-in">
+        <div class="card-body" style="display:flex;gap:8px;flex-wrap:wrap;padding:12px;">
+          <input class="input" placeholder="🔍 Search student or receipt..." style="flex:1;min-width:130px;" oninput="filterHistory(this.value)"/>
+          <select class="input" style="min-width:105px;" onchange="filterHistoryMethod(this.value)">
+            <option value="">All Methods</option><option value="mpesa">M-Pesa</option><option value="cash">Cash</option><option value="bank">Bank</option>
+          </select>
+        </div>
+      </div>
+      <div class="card fade-in fade-in-1">
+        <div class="card-body" style="padding:0;overflow-x:auto;">
+          <table class="students-table">
+            <thead><tr><th>Student</th><th>Receipt ID</th><th>Amount</th><th>Method</th><th>Date</th><th>Balance</th><th></th></tr></thead>
+            <tbody id="history-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- FEE STRUCTURE -->
+    <div id="admin-fee-structure" class="scroll-area" style="display:none;">
+      <div class="section-hd fade-in">
+        <div><h2>📐 Fee Structure</h2><div class="section-sub">Define & manage per-class fees</div></div>
+        <button class="btn btn-primary btn-sm" onclick="openModal('modal-fee-structure')">+ Edit</button>
+      </div>
+      <div class="tab-bar" id="admin-class-tabs"></div>
+      <div class="card fade-in fade-in-1 mb-16">
+        <div class="card-header">
+          <h3 id="admin-fs-title">Class 4B – Fee Structure</h3>
+          <div class="flex gap-8">
+            <button class="btn btn-outline btn-sm" onclick="showToast('PDF download — storage integration pending','info')">⬇ PDF</button>
+            <button class="btn btn-ghost btn-sm" onclick="openModal('modal-fee-structure')">✏️ Edit</button>
+          </div>
+        </div>
+        <div style="overflow-x:auto;"><table class="fee-tbl"><thead><tr><th>Fee Item</th><th>Per Term (KSh)</th><th>Per Year (KSh)</th><th>Notes</th></tr></thead><tbody id="admin-fee-tbl-body"></tbody></table></div>
+        <div class="card-footer"><span class="text-sm text-muted">Last updated by Admin Kamau · 2 Aug 2025</span></div>
+      </div>
+      <div class="card fade-in fade-in-2">
+        <div class="card-header"><h3>📊 Outstanding by Class</h3></div>
+        <div style="overflow-x:auto;"><table class="students-table"><thead><tr><th>Class</th><th>Students</th><th>Total Fees</th><th>Collected</th><th>Outstanding</th><th>Progress</th></tr></thead><tbody id="class-summary-tbody"></tbody></table></div>
+      </div>
+    </div>
+
+    <!-- STUDENTS -->
+    <div id="admin-students" class="scroll-area" style="display:none;">
+      <div class="section-hd fade-in">
+        <div><h2>👥 Student Profiles</h2><div class="section-sub">Fee status per student</div></div>
+        <div class="flex gap-8">
+          <button class="btn btn-outline btn-sm" onclick="openModal('modal-reminders')">📤 SMS</button>
+          <button class="btn btn-primary btn-sm" onclick="openModal('modal-add-student')">+ Add</button>
+        </div>
+      </div>
+      <div class="card mb-12 fade-in">
+        <div class="card-body" style="display:flex;gap:8px;flex-wrap:wrap;padding:12px;">
+          <input class="input" placeholder="🔍 Search..." style="flex:1;min-width:130px;" oninput="filterStudents(this.value)"/>
+          <select class="input" style="min-width:110px;" onchange="filterStudentStatus(this.value)">
+            <option value="">All Status</option><option value="paid">Fully Paid</option><option value="partial">Partial</option><option value="unpaid">Unpaid</option>
+          </select>
+        </div>
+      </div>
+      <div class="card fade-in fade-in-1">
+        <div class="card-body" style="padding:0;overflow-x:auto;">
+          <table class="students-table"><thead><tr><th>Student</th><th>Class</th><th>Total</th><th>Paid</th><th>Balance</th><th>Status</th><th></th></tr></thead><tbody id="admin-students-tbody"></tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- COURSE REGISTRATION / LESSONS -->
+    <div id="admin-lessons" class="scroll-area" style="display:none;">
+      <div class="section-hd fade-in"><h2>📚 Course Registration</h2><button class="btn btn-primary btn-sm" onclick="openModal('modal-create-lesson')">+ Create</button></div>
+      <div class="card fade-in"><div class="card-body" id="admin-lessons-list"></div></div>
+    </div>
+
+    <!-- COURSE EVALUATION / RESULTS -->
+    <div id="admin-results" class="scroll-area" style="display:none;">
+      <div class="section-hd fade-in"><h2>📊 Course Evaluation</h2><button class="btn btn-primary btn-sm" onclick="openModal('modal-enter-results')">+ Enter</button></div>
+      <div class="card fade-in mb-16">
+        <div class="card-body">
+          <div class="field mb-12"><label>Select Class</label><select class="input"><option>Class 4B</option><option>Class 6A</option><option>Class 3C</option></select></div>
+          <div class="field mb-12"><label>Exam / Term</label><select class="input"><option>Mid-Term, Term 2 2025</option><option>End-Term, Term 1 2025</option></select></div>
+          <button class="btn btn-outline btn-full" onclick="openModal('modal-enter-results')">Load Students →</button>
+        </div>
+      </div>
+      <div class="card fade-in fade-in-1">
+        <div class="card-header"><h3>Recent Entries</h3></div>
+        <div class="card-body">
+          <div class="notif-item"><div class="notif-ico" style="background:var(--primary-light);">📊</div><div class="notif-info"><div class="notif-title">Class 6B – Mid-Term</div><div class="notif-body">28 students · Avg 74% · Entered by Mr. Kamau</div><div class="notif-time">Yesterday</div></div></div>
+          <div class="notif-item"><div class="notif-ico" style="background:var(--cyan-light);">📊</div><div class="notif-info"><div class="notif-title">Class 4B – Mid-Term</div><div class="notif-body">32 students · Avg 78% · Entered by Ms. Akinyi</div><div class="notif-time">2 days ago</div></div></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /admin-pages -->
+</div><!-- /admin-app -->
+
+<!-- ══════════════════════════════════════════════
+     MODALS
+══════════════════════════════════════════════ -->
+
+<!-- RECEIPT -->
+<div class="modal-overlay" id="modal-receipt" onclick="closeModal('modal-receipt')">
+  <div class="modal-sheet" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-head"><h2>🧾 Payment Receipt</h2><p>Official payment confirmation</p></div>
+    <div class="modal-body">
+      <div class="receipt" id="receipt-card"></div>
+      <div class="sms-panel">
+        <div class="sms-panel-head"><div class="sms-icon">📱</div><div><h3>SMS Notification</h3><p>Send receipt to parent's phone</p></div></div>
+        <div class="sms-preview" id="sms-preview-text"></div>
+        <button class="sms-send-btn" onclick="sendSMS(this)">📤 Send SMS to Parent</button>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-primary btn-full" onclick="showToast('🖨️ Print dialog — window.print() integration pending','info')">🖨️ Print Receipt</button>
+      <button class="btn btn-ghost btn-full" onclick="closeModal('modal-receipt')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- PAY M-PESA -->
+<div class="modal-overlay" id="modal-pay" onclick="closeModal('modal-pay')">
+  <div class="modal-sheet" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-head"><h2>Pay via M-Pesa</h2><p>Payment for Amara Mwangi · Class 4B</p></div>
+    <div class="modal-body">
+      <div class="field mb-12"><label>M-Pesa Phone Number</label><input class="input" type="tel" value="+254 712 345 678"/></div>
+      <div class="field mb-12"><label>Amount (KSh)</label><input class="input" type="number" id="mpesa-amount" value="8500"/></div>
+      <div style="background:var(--surface2);border-radius:var(--rs);padding:14px;margin-bottom:14px;">
+        <div class="flex justify-between mb-8"><span class="text-sm text-muted">Fee Balance</span><span class="fw-bold" id="mpesa-modal-balance">KSh 8,500</span></div>
+        <div class="flex justify-between mb-8"><span class="text-sm text-muted">Transaction Fee</span><span class="fw-bold">KSh 0</span></div>
+        <div class="flex justify-between"><span class="fw-semi">Total</span><span class="fw-bold text-primary">KSh 8,500</span></div>
+      </div>
+      <button class="mpesa-btn mb-12" onclick="simulateMpesa()"><span class="mpesa-logo">M-PESA</span>Send STK Push to My Phone</button>
+      <button class="btn btn-ghost btn-full" onclick="closeModal('modal-pay')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- M-PESA PROCESSING -->
+<div class="modal-overlay" id="modal-mpesa">
+  <div class="modal-sheet" style="text-align:center;">
+    <div class="modal-handle"></div>
+    <div class="modal-body">
+      <div style="font-size:3rem;margin-bottom:10px;">📱</div>
+      <div style="font-family:var(--fd);font-size:1.2rem;font-weight:700;margin-bottom:6px;">STK Push Sent!</div>
+      <div class="text-sm text-muted mb-16">Check your phone and enter your M-Pesa PIN to complete payment.</div>
+      <div id="mpesa-loader" style="display:flex;align-items:center;justify-content:center;gap:8px;color:var(--text2);margin-bottom:14px;">
+        <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>
+        <span class="text-sm">Waiting for payment...</span>
+      </div>
+      <div id="mpesa-success" style="display:none;">
+        <div style="background:var(--green-light);border-radius:var(--rs);padding:16px;margin-bottom:14px;">
+          <div style="font-size:2rem;margin-bottom:5px;">✅</div>
+          <div class="fw-bold text-success">Payment Successful!</div>
+          <div class="text-sm text-muted mt-4" id="mpesa-success-detail">KSh 8,500 received</div>
+        </div>
+        <button class="btn btn-success btn-full" onclick="finishMpesaPayment()">View Receipt →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FEE STRUCTURE EDITOR -->
+<div class="modal-overlay" id="modal-fee-structure" onclick="closeModal('modal-fee-structure')">
+  <div class="modal-sheet" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-head"><h2>📐 Edit Fee Structure</h2><p>Define fees per class and term</p></div>
+    <div class="modal-body">
+      <div class="form-grid mb-12">
+        <div class="field"><label>Class</label><select class="input"><option>Class 1A</option><option>Class 2A</option><option>Class 3A</option><option selected>Class 4B</option><option>Class 5A</option><option>Class 6A</option></select></div>
+        <div class="field"><label>Term</label><select class="input"><option>Term 1</option><option selected>Term 2</option><option>Term 3</option></select></div>
+      </div>
+      <div class="text-xs text-muted fw-semi mb-8">FEE ITEMS</div>
+      <div id="fee-rows-editor">
+        <div class="fee-row-ed"><input class="input" value="Tuition Fee"/><div class="inp-prefix"><span class="pre-tag">KSh</span><input type="number" value="18000"/></div><button class="btn btn-ghost btn-icon" onclick="this.parentElement.remove()">✕</button></div>
+        <div class="fee-row-ed"><input class="input" value="Lunch Fee"/><div class="inp-prefix"><span class="pre-tag">KSh</span><input type="number" value="4000"/></div><button class="btn btn-ghost btn-icon" onclick="this.parentElement.remove()">✕</button></div>
+        <div class="fee-row-ed"><input class="input" value="Transport Fee"/><div class="inp-prefix"><span class="pre-tag">KSh</span><input type="number" value="2000"/></div><button class="btn btn-ghost btn-icon" onclick="this.parentElement.remove()">✕</button></div>
+        <div class="fee-row-ed"><input class="input" value="Activity Fee"/><div class="inp-prefix"><span class="pre-tag">KSh</span><input type="number" value="1000"/></div><button class="btn btn-ghost btn-icon" onclick="this.parentElement.remove()">✕</button></div>
+      </div>
+      <button class="btn btn-outline btn-full btn-sm mt-12" onclick="addFeeRow()">+ Add Fee Item</button>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-primary btn-full" onclick="saveFeeStructure()">Save Fee Structure</button>
+      <button class="btn btn-ghost btn-full" onclick="closeModal('modal-fee-structure')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD STUDENT -->
+<div class="modal-overlay" id="modal-add-student" onclick="closeModal('modal-add-student')">
+  <div class="modal-sheet" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-head"><h2>Add New Student</h2><p>Enter student details</p></div>
+    <div class="modal-body">
+      <div class="field mb-12"><label>Full Name</label><input class="input" placeholder="e.g. Amara Mwangi"/></div>
+      <div class="form-grid mb-12">
+        <div class="field"><label>Class</label><select class="input"><option>Class 1A</option><option>Class 2A</option><option>Class 3A</option><option>Class 4B</option><option>Class 5A</option><option>Class 6A</option></select></div>
+        <div class="field"><label>Date of Birth</label><input class="input" type="date"/></div>
+      </div>
+      <div class="field mb-16"><label>Parent Phone</label><input class="input" type="tel" placeholder="+254 7XX XXX XXX"/></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-primary btn-full" onclick="showToast('Student added! (Supabase ready)','success');closeModal('modal-add-student')">Save Student</button>
+      <button class="btn btn-ghost btn-full" onclick="closeModal('modal-add-student')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- CREATE LESSON -->
+<div class="modal-overlay" id="modal-create-lesson" onclick="closeModal('modal-create-lesson')">
+  <div class="modal-sheet" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-head"><h2>Create Lesson</h2><p>Add a new lesson for students</p></div>
+    <div class="modal-body">
+      <div class="field mb-12"><label>Lesson Title</label><input class="input" placeholder="e.g. Fractions – Part 3"/></div>
+      <div class="form-grid mb-12">
+        <div class="field"><label>Subject</label><select class="input"><option>Mathematics</option><option>English</option><option>Science</option><option>Social Studies</option><option>Kiswahili</option></select></div>
+        <div class="field"><label>Class</label><select class="input"><option>Class 4B</option><option>Class 6A</option><option>Class 3C</option></select></div>
+      </div>
+      <div class="field mb-12"><label>Content</label><textarea class="input" rows="4" placeholder="Lesson content..."></textarea></div>
+      <div class="field mb-4"><label>Attach File (optional)</label><input class="input" type="file"/></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-primary btn-full" onclick="showToast('Lesson published! (Supabase ready)','success');closeModal('modal-create-lesson')">Publish Lesson</button>
+      <button class="btn btn-ghost btn-full" onclick="closeModal('modal-create-lesson')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ENTER RESULTS -->
+<div class="modal-overlay" id="modal-enter-results" onclick="closeModal('modal-enter-results')">
+  <div class="modal-sheet" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-head"><h2>Enter Results</h2><p>Class 4B · Mid-Term 2025</p></div>
+    <div class="modal-body">
+      <div class="field mb-12"><label>Student</label><select class="input"><option>Amara Mwangi</option><option>Brian Otieno</option><option>Fatuma Hassan</option></select></div>
+      <div class="form-grid mb-12">
+        <div class="field"><label>Mathematics (%)</label><input class="input" type="number" placeholder="0-100"/></div>
+        <div class="field"><label>English (%)</label><input class="input" type="number" placeholder="0-100"/></div>
+        <div class="field"><label>Science (%)</label><input class="input" type="number" placeholder="0-100"/></div>
+        <div class="field"><label>Social Studies (%)</label><input class="input" type="number" placeholder="0-100"/></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-primary btn-full" onclick="showToast('Results saved!','success');closeModal('modal-enter-results')">Save Results</button>
+      <button class="btn btn-ghost btn-full" onclick="closeModal('modal-enter-results')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- SMS REMINDERS -->
+<div class="modal-overlay" id="modal-reminders" onclick="closeModal('modal-reminders')">
+  <div class="modal-sheet" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-head"><h2>📤 Send SMS Reminders</h2><p>Bulk fee reminders to parents</p></div>
+    <div class="modal-body">
+      <div class="field mb-12"><label>Send to</label><select class="input"><option>All parents with balance > 0</option><option>Overdue (>30 days)</option><option>Specific class</option></select></div>
+      <div class="field mb-12"><label>Message</label><textarea class="input" rows="4">Dear Parent, your child [NAME] has an outstanding balance of KSh [BALANCE] for Term 2, 2025. Please pay by 30 Sep 2025. Paybill: 123456. St. Mary's Primary.</textarea></div>
+      <div style="background:var(--amber-light);border-radius:var(--rs);padding:12px;border:1px solid var(--border);">
+        <div class="text-sm fw-semi text-warning">⚠️ This will send SMS to 98 parents</div>
+        <div class="text-xs text-muted mt-4">Est. cost: KSh 196 (KSh 2/SMS)</div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-primary btn-full" onclick="showToast('98 SMS reminders queued 📤','info');closeModal('modal-reminders')">Send 98 SMS Reminders</button>
+      <button class="btn btn-ghost btn-full" onclick="closeModal('modal-reminders')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast-wrap" id="toast-wrap"></div>
+
+</div><!-- /app -->
+
+<script>
+/* ================================================================
+   SUPABASE STUBS
+   ================================================================
+   Tables: students, fee_structures, payments, receipts
+   Replace db.* functions with:
+   const { data, error } = await supabase.from('payments').insert({...})
+================================================================ */
+
+const db = {
+  students:[
+    {id:'s1',name:'Amara Mwangi',cls:'4B',adm:'STM/4B/021',phone:'+254712345678',total:25000,paid:16500},
+    {id:'s2',name:'Brian Otieno',cls:'6A',adm:'STM/6A/015',phone:'+254723456789',total:28000,paid:28000},
+    {id:'s3',name:'Fatuma Hassan',cls:'3C',adm:'STM/3C/008',phone:'+254734567890',total:22000,paid:9500},
+    {id:'s4',name:'Daniel Kipchoge',cls:'5A',adm:'STM/5A/031',phone:'+254745678901',total:26000,paid:26000},
+    {id:'s5',name:'Grace Wambui',cls:'2B',adm:'STM/2B/044',phone:'+254756789012',total:20000,paid:5000},
+    {id:'s6',name:'Kevin Omondi',cls:'4B',adm:'STM/4B/028',phone:'+254767890123',total:25000,paid:25000},
+    {id:'s7',name:'Aisha Muthoni',cls:'1A',adm:'STM/1A/003',phone:'+254778901234',total:18000,paid:10000},
+    {id:'s8',name:'Peter Kamau',cls:'6A',adm:'STM/6A/022',phone:'+254789012345',total:28000,paid:14000},
+  ],
+  feeStructures:{
+    '4B':[{item:'Tuition Fee',termly:18000,yearly:54000,notes:'Core curriculum'},{item:'Lunch Fee',termly:4000,yearly:12000,notes:'School meals'},{item:'Transport Fee',termly:2000,yearly:6000,notes:'Optional'},{item:'Activity Fee',termly:1000,yearly:3000,notes:'Co-curricular'}],
+    '6A':[{item:'Tuition Fee',termly:20000,yearly:60000,notes:'Core curriculum'},{item:'Lunch Fee',termly:4000,yearly:12000,notes:'School meals'},{item:'Transport Fee',termly:2000,yearly:6000,notes:'Optional'},{item:'KCPE Levy',termly:2000,yearly:6000,notes:'Exam preparation'}],
+    '3C':[{item:'Tuition Fee',termly:16000,yearly:48000,notes:'Core curriculum'},{item:'Lunch Fee',termly:4000,yearly:12000,notes:'School meals'},{item:'Activity Fee',termly:1000,yearly:3000,notes:'Co-curricular'},{item:'Stationery',termly:1000,yearly:3000,notes:'Books & materials'}],
+  },
+  payments:[
+    {id:'p1',studentId:'s1',studentName:'Amara Mwangi',cls:'4B',amount:10000,method:'mpesa',reference:'QHJ7823K',date:'2025-08-15',receiptId:'SCH-782301',balanceAfter:8500,notes:'',by:'Admin Kamau'},
+    {id:'p2',studentId:'s1',studentName:'Amara Mwangi',cls:'4B',amount:6500,method:'mpesa',reference:'MNP4512L',date:'2025-08-05',receiptId:'SCH-448212',balanceAfter:18500,notes:'First installment',by:'Admin Kamau'},
+    {id:'p3',studentId:'s2',studentName:'Brian Otieno',cls:'6A',amount:28000,method:'bank',reference:'TRF-2025-0081',date:'2025-08-01',receiptId:'SCH-110088',balanceAfter:0,notes:'Full payment',by:'Admin Njeri'},
+    {id:'p4',studentId:'s3',studentName:'Fatuma Hassan',cls:'3C',amount:9500,method:'cash',reference:'',date:'2025-08-10',receiptId:'SCH-334455',balanceAfter:12500,notes:'',by:'Admin Kamau'},
+    {id:'p5',studentId:'s4',studentName:'Daniel Kipchoge',cls:'5A',amount:26000,method:'mpesa',reference:'KPH8834X',date:'2025-08-02',receiptId:'SCH-228899',balanceAfter:0,notes:'Full payment',by:'Admin Njeri'},
+    {id:'p6',studentId:'s5',studentName:'Grace Wambui',cls:'2B',amount:5000,method:'cash',reference:'',date:'2025-08-12',receiptId:'SCH-667711',balanceAfter:15000,notes:'Partial',by:'Admin Kamau'},
+  ],
+  lessons:[
+    {id:1,title:'Fractions – Part 2',subject:'Mathematics',date:'Today',icon:'➗',bg:'#EAF3FF',done:true,content:'In this lesson we explored adding and subtracting fractions with unlike denominators.\n\nKey concept: find the LCM of the denominators first.\n\nExample: ½ + ⅓ → LCM(2,3) = 6 → 3/6 + 2/6 = 5/6\n\nPractice: Exercise 4.2 on page 67 of the Maths textbook.'},
+    {id:2,title:'States of Matter',subject:'Science',date:'Today',icon:'🔬',bg:'#FEF3C7',done:false,content:'Matter exists in three states: solid, liquid, and gas.\n\nSolids — fixed shape and volume.\nLiquids — fixed volume, takes container shape.\nGases — no fixed shape or volume.\n\nKey terms: evaporation, condensation, melting, freezing, sublimation.'},
+    {id:3,title:'Descriptive Writing',subject:'English',date:'Yesterday',icon:'📝',bg:'#F3E8FF',done:true,content:'We practiced descriptive writing using vivid adjectives, sensory details, and varied sentences to bring stories to life.'},
+    {id:4,title:'Our Community Helpers',subject:'Social Studies',date:'2 days ago',icon:'🌍',bg:'#E0FAFA',done:true,content:'Covered the roles of teachers, doctors, police officers, farmers, and traders and how each contributes to our community.'},
+  ],
+  results:[
+    {subject:'Mathematics',score:82,teacher:'Mr. Kamau',icon:'➗',color:'#22C55E'},
+    {subject:'English',score:75,teacher:'Ms. Akinyi',icon:'📝',color:'#0A84FF'},
+    {subject:'Science',score:68,teacher:'Mr. Odhiambo',icon:'🔬',color:'#F59E0B'},
+    {subject:'Social Studies',score:80,teacher:'Ms. Wanjiku',icon:'🌍',color:'#8B5CF6'},
+    {subject:'Kiswahili',score:72,teacher:'Mwalimu Juma',icon:'🗣️',color:'#00C6C6'},
+    {subject:'CRE',score:88,teacher:'Ms. Njeri',icon:'✝️',color:'#EC4899'},
+  ],
+  adminLessons:[
+    {title:'Fractions – Part 2',subject:'Mathematics',cls:'Class 4B',date:'Today',icon:'➗'},
+    {title:'States of Matter',subject:'Science',cls:'Class 4B',date:'Today',icon:'🔬'},
+    {title:'Essay Writing',subject:'English',cls:'Class 6A',date:'Yesterday',icon:'📝'},
+    {title:'Mazungumzo',subject:'Kiswahili',cls:'Class 5A',date:'2 days ago',icon:'🗣️'},
+  ],
+  notifications:[
+    {id:1,title:'Fee Reminder 💰',body:'Your outstanding balance of KSh 8,500 is due by 30th September 2025.',time:'2 hours ago',icon:'💰',iconBg:'var(--amber-light)',unread:true},
+    {id:2,title:'Results Published 📊',body:'Mid-term exam results for Term 2, 2025 are now available. Amara scored 78%.',time:'Yesterday',icon:'📊',iconBg:'var(--cyan-light)',unread:true},
+    {id:3,title:'New Lesson Added 📚',body:'Mr. Kamau uploaded "Fractions – Part 2" for Class 4B.',time:'2 days ago',icon:'📚',iconBg:'var(--primary-light)',unread:false},
+    {id:4,title:'School Closing 🏫',body:'Term 2 ends 15 Oct 2025. Ensure all fees are settled before closing day.',time:'1 week ago',icon:'🏫',iconBg:'var(--green-light)',unread:false},
+    {id:5,title:'Parent Meeting 👥',body:'Parent meeting: Saturday 5 Oct at 9:00 AM. Attendance required.',time:'1 week ago',icon:'👥',iconBg:'var(--purple-light)',unread:false},
+  ]
+};
+
+const aiResponses={
+  fractions:'📐 Today\'s math lesson covered adding fractions with unlike denominators. The key step is finding the LCM first. Example: ½ + ⅓ = 3/6 + 2/6 = 5/6. Try with Amara: ¼ + ⅓ = 7/12!',
+  science:'🔬 Science revision questions on States of Matter:\n1. What happens to water molecules when water boils?\n2. What is sublimation?\n3. Name 2 differences between liquid and gas.\nEncourage Amara to write answers in her notebook!',
+  performance:'📊 Amara is performing Good overall — 78% average. Strongest: CRE (88%). Needs improvement: Science (68%). Recommend 15 min of Science revision daily!',
+  focus:'🎯 Amara should focus on: 1. Science (68% — lowest), 2. Kiswahili (72%). Her strengths are CRE and Mathematics. Keep encouraging her!',
+  default:'👩‍🏫 Great question! I can explain any lesson, give revision questions, or suggest study tips. Which subject or topic would you like help with?'
+};
+
+let currentRole='parent';
+let pendingMpesaPayment=null;
+let selectedFeeClass='4B';
+
+/* ── UTILS ── */
+const fmt=n=>Number(n).toLocaleString('en-KE');
+const fmtK=n=>n>=1e6?(n/1e6).toFixed(1)+'M':n>=1e3?(n/1e3).toFixed(0)+'K':n;
+const today=()=>new Date().toISOString().slice(0,10);
+const fmtDate=d=>{try{return new Date(d).toLocaleDateString('en-KE',{day:'numeric',month:'short',year:'numeric'})}catch{return d}};
+const genReceiptId=()=>'SCH-'+Math.floor(100000+Math.random()*900000);
+
+/* ── PAGE ROUTER ── */
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  const p=document.getElementById(id);
+  if(p){p.classList.add('active');window.scrollTo(0,0);}
+}
+
+/* ── DRAWER ── */
+function openDrawer(role){
+  document.getElementById(role+'-overlay').classList.add('open');
+  document.getElementById(role+'-drawer').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeDrawer(role){
+  document.getElementById(role+'-overlay').classList.remove('open');
+  document.getElementById(role+'-drawer').classList.remove('open');
+  document.body.style.overflow='';
+}
+
+/* ── PARENT NAV ── */
+const PARENT_SECTIONS=['dashboard','fees','fee-structure','receipts','legacy','examcard','transcript','results','learning','ai','notifications'];
+const PARENT_TITLES={
+  dashboard:'Personal Profile',fees:'Fee Statement',
+  'fee-structure':'Fee Structure',receipts:'Receipts',
+  legacy:'Legacy Statement',
+  examcard:'Exam Card',transcript:'Transcript',
+  results:'Course Evaluation',learning:'Course / Learning',
+  ai:'AI Tutor',notifications:'Notifications'
+};
+
+function parentNav(section){
+  PARENT_SECTIONS.forEach(s=>{
+    const el=document.getElementById('parent-'+s);
+    if(el) el.style.display='none';
+  });
+  const target=document.getElementById('parent-'+section);
+  if(target){target.style.display='block';target.scrollTop=0;}
+
+  // Update drawer active state
+  document.querySelectorAll('#p-drawer .drawer-item').forEach(i=>i.classList.remove('active'));
+  const di=document.getElementById('pdrawer-'+section);
+  if(di) di.classList.add('active');
+
+  // Update topbar title
+  const t=document.getElementById('p-topbar-title');
+  if(t) t.innerHTML=(PARENT_TITLES[section]||'ElimuConnect')+' <span>· Parent</span>';
+
+  if(section==='notifications'){
+    const dot=document.getElementById('p-notif-dot');
+    if(dot) dot.style.display='none';
+  }
+  closeDrawer('p');
+}
+
+/* ── ADMIN NAV ── */
+const ADMIN_SECTIONS=['dashboard','record','history','fee-structure','students','lessons','results'];
+const ADMIN_TITLES={
+  dashboard:'Overview',record:'Fee Statement / Record',
+  history:'Receipts',
+  'fee-structure':'Fee Structure',
+  students:'Student Profiles',
+  lessons:'Course Registration',
+  results:'Course Evaluation'
+};
+
+function adminNav(section){
+  ADMIN_SECTIONS.forEach(s=>{
+    const el=document.getElementById('admin-'+s);
+    if(el) el.style.display='none';
+  });
+  const target=document.getElementById('admin-'+section);
+  if(target){target.style.display='block';target.scrollTop=0;}
+
+  document.querySelectorAll('#a-drawer .drawer-item').forEach(i=>i.classList.remove('active'));
+  const di=document.getElementById('adrawer-'+section);
+  if(di) di.classList.add('active');
+
+  const t=document.getElementById('a-topbar-title');
+  if(t) t.innerHTML=(ADMIN_TITLES[section]||'Admin')+' <span>· Admin</span>';
+
+  closeDrawer('a');
+}
+
+/* ── AUTH ── */
+function setRole(role,el){
+  currentRole=role;
+  document.querySelectorAll('.role-pill').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+}
+function goToOTP(){
+  const phone=document.getElementById('login-phone').value||'712 345 678';
+  document.getElementById('otp-phone-display').textContent='+254 '+phone;
+  showPage('page-otp');
+}
+function otpInput(el,idx){
+  const val=el.value.replace(/\D/g,'').slice(-1);
+  el.value=val;
+  if(val&&idx<3) document.querySelectorAll('.otp-input')[idx+1].focus();
+}
+function verifyOTP(){
+  const otp=Array.from(document.querySelectorAll('.otp-input')).map(i=>i.value).join('');
+  if(otp==='1234'){
+    if(currentRole==='admin'){showPage('page-admin-app');initAdmin();}
+    else{showPage('page-parent-app');initParent();}
+  }else{
+    showToast('Incorrect OTP. Use 1234 for demo.','error');
+    document.querySelectorAll('.otp-input').forEach(i=>{i.value='';i.style.borderColor='var(--red)'});
+    setTimeout(()=>document.querySelectorAll('.otp-input').forEach(i=>i.style.borderColor=''),1500);
+    document.querySelectorAll('.otp-input')[0].focus();
+  }
+}
+function logout(){
+  showPage('page-login');
+  closeDrawer('p');closeDrawer('a');
+  document.querySelectorAll('.otp-input').forEach(i=>i.value='');
+  const lp=document.getElementById('login-phone');if(lp)lp.value='';
+}
+
+/* ── INIT ── */
+function initParent(){
+  renderResults();renderLessons();renderNotifications();
+  renderParentPaymentHistory();renderParentFeeStructure();
+  renderParentReceipts();updateParentFeeUI();renderDashboardLatestReceipt();
+  parentNav('dashboard');
+}
+function initAdmin(){
+  populateStudentDropdown();
+  renderAdminRecentPayments();renderHistoryTable(db.payments);
+  renderAdminFeeStructure('4B');renderAdminClassTabs();renderClassSummary();
+  renderAdminStudents(db.students);renderAdminLessons();
+  document.getElementById('rp-date').value=today();
+  adminNav('dashboard');
+}
+
+/* ── PARENT FEE UI ── */
+function updateParentFeeUI(){
+  const s=db.students[0];
+  const bal=s.total-s.paid;
+  const pct=Math.round(s.paid/s.total*100);
+  const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+  set('pf-total-amount','KSh '+fmt(s.total));
+  set('pf-paid-val','KSh '+fmt(s.paid));
+  set('pf-balance-val','KSh '+fmt(bal));
+  set('pf-progress-label',pct+'% of term fees paid');
+  set('pf-pay-btn-amt','KSh '+fmt(bal));
+  set('p-dash-balance','KSh '+fmt(bal));
+  set('mpesa-modal-balance','KSh '+fmt(bal));
+  const pb=document.getElementById('pf-progress-bar');if(pb)pb.style.width=pct+'%';
+  const pr=document.getElementById('pf-progress-ring');
+  if(pr){const c=138.23;pr.setAttribute('stroke-dashoffset',c-(c*pct/100));}
+  const ma=document.getElementById('mpesa-amount');if(ma)ma.value=bal;
+}
+
+/* ── RENDERS ── */
+function renderResults(){
+  const c=document.getElementById('results-list');if(!c)return;
+  c.innerHTML=db.results.map(r=>{
+    const p=r.score>=80?{l:'Excellent',b:'badge-success'}:r.score>=65?{l:'Good',b:'badge-primary'}:{l:'Needs Work',b:'badge-warning'};
+    return`<div class="subject-card"><div class="s-top"><div style="display:flex;align-items:center;gap:7px;"><span style="font-size:1.1rem;">${r.icon}</span><span class="s-name">${r.subject}</span></div><span class="s-score" style="color:${r.color}">${r.score}%</span></div><div class="s-bar"><div class="s-fill" style="width:${r.score}%;background:${r.color};"></div></div><div class="s-meta"><span class="s-teacher">👤 ${r.teacher}</span><span class="badge ${p.b}">${p.l}</span></div></div>`;
+  }).join('');
+}
+function renderLessons(){
+  const c=document.getElementById('lessons-list');if(!c)return;
+  c.innerHTML=db.lessons.map(l=>`<div class="lesson-item" onclick="openLesson(${l.id})"><div class="lesson-thumb" style="background:${l.bg};">${l.icon}</div><div style="flex:1;"><div class="l-title">${l.title}</div><div class="l-meta">${l.subject}</div><div class="l-date">${l.date}</div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;"><span class="badge ${l.done?'badge-success':'badge-warning'}">${l.done?'✓ Done':'Pending'}</span><span style="color:var(--text3);font-size:1rem;">›</span></div></div>`).join('');
+}
+function openLesson(id){
+  const l=db.lessons.find(x=>x.id===id);if(!l)return;
+  document.getElementById('lesson-list-view').style.display='none';
+  document.getElementById('lesson-detail-view').style.display='block';
+  document.getElementById('lesson-detail-title').textContent=l.title;
+  document.getElementById('lesson-detail-subject').textContent=l.subject;
+  document.getElementById('lesson-detail-date').textContent=l.date;
+  document.getElementById('lesson-detail-content').textContent=l.content;
+}
+function backToLessons(){
+  document.getElementById('lesson-list-view').style.display='block';
+  document.getElementById('lesson-detail-view').style.display='none';
+}
+function renderNotifications(){
+  const c=document.getElementById('notifications-list');if(!c)return;
+  c.innerHTML=db.notifications.map(n=>`<div class="notif-full-item ${n.unread?'unread':''}" onclick="this.classList.remove('unread')"><div class="notif-ico" style="background:${n.iconBg};">${n.icon}</div><div style="flex:1;"><div class="nf-title">${n.title}</div><div class="nf-body">${n.body}</div><div class="nf-time">${n.time}</div></div></div>`).join('');
+}
+function markAllRead(){document.querySelectorAll('.notif-full-item.unread').forEach(e=>e.classList.remove('unread'));}
+
+function renderParentPaymentHistory(){
+  const c=document.getElementById('parent-payment-history');if(!c)return;
+  const payments=db.payments.filter(p=>p.studentId==='s1');
+  c.innerHTML=payments.length?payments.map(p=>phItem(p)).join(''):'<div class="empty-state"><div class="empty-ico">💳</div><p>No payments yet</p></div>';
+}
+function renderParentFeeStructure(){
+  const items=db.feeStructures['4B']||[];
+  const total=items.reduce((a,i)=>a+i.termly,0);
+  const tbody=document.getElementById('parent-fee-tbl-body');if(!tbody)return;
+  tbody.innerHTML=items.map(i=>`<tr><td><span class="fw-semi">${i.item}</span></td><td><span class="fw-bold text-primary">KSh ${fmt(i.termly)}</span></td><td>KSh ${fmt(i.yearly)}</td><td><span class="text-xs text-muted">${i.notes}</span></td></tr>`).join('')+
+    `<tr class="total-row"><td class="fw-bold">TOTAL</td><td>KSh ${fmt(total)}</td><td>KSh ${fmt(total*3)}</td><td></td></tr>`;
+}
+function renderParentReceipts(){
+  const c=document.getElementById('parent-receipts-list');if(!c)return;
+  const payments=db.payments.filter(p=>p.studentId==='s1');
+  c.innerHTML=payments.map(p=>`<div class="card mb-12 fade-in" style="overflow:hidden;">
+    <div style="background:linear-gradient(135deg,var(--primary),var(--primary-dark));padding:13px 16px;color:#fff;display:flex;justify-content:space-between;align-items:center;">
+      <div><div style="font-size:.68rem;opacity:.75;">RECEIPT ID</div><div class="fw-bold">${p.receiptId}</div></div>
+      <div style="text-align:right;"><div style="font-size:.68rem;opacity:.75;">AMOUNT PAID</div><div class="fw-bold">KSh ${fmt(p.amount)}</div></div>
+    </div>
+    <div class="card-body">
+      <div class="flex justify-between mb-8"><span class="text-sm text-muted">Date</span><span class="fw-semi">${fmtDate(p.date)}</span></div>
+      <div class="flex justify-between mb-8"><span class="text-sm text-muted">Method</span>${methodBadge(p.method)}</div>
+      <div class="flex justify-between mb-12"><span class="text-sm text-muted">Balance After</span><span class="fw-bold ${p.balanceAfter===0?'text-success':'text-danger'}">KSh ${fmt(p.balanceAfter)}</span></div>
+      <button class="btn btn-outline btn-full btn-sm" onclick="viewReceipt('${p.receiptId}')">🧾 View Full Receipt</button>
+    </div>
+  </div>`).join('');
+}
+function renderDashboardLatestReceipt(){
+  const payments=db.payments.filter(p=>p.studentId==='s1');
+  if(!payments.length)return;
+  const latest=payments[0];
+  const wrap=document.getElementById('p-dash-latest-receipt');
+  const body=document.getElementById('p-dash-receipt-body');
+  if(!wrap||!body)return;
+  wrap.style.display='block';
+  body.innerHTML=`
+    <div class="flex justify-between mb-8"><span class="text-sm text-muted">Receipt ID</span><span class="fw-bold text-primary">${latest.receiptId}</span></div>
+    <div class="flex justify-between mb-8"><span class="text-sm text-muted">Amount Paid</span><span class="fw-bold text-success">KSh ${fmt(latest.amount)}</span></div>
+    <div class="flex justify-between mb-12"><span class="text-sm text-muted">Balance After</span><span class="fw-bold text-danger">KSh ${fmt(latest.balanceAfter)}</span></div>
+    <button class="btn btn-outline btn-full btn-sm" onclick="viewReceipt('${latest.receiptId}')">🧾 View Receipt</button>`;
+}
+
+/* ── PAYMENT HISTORY ITEM ── */
+function phItem(p){
+  const ico={mpesa:'📱',cash:'💵',bank:'🏦',cheque:'📝'}[p.method]||'💳';
+  const bg={mpesa:'var(--green-light)',cash:'var(--amber-light)',bank:'var(--primary-light)',cheque:'var(--purple-light)'}[p.method]||'var(--surface2)';
+  return`<div class="ph-item"><div class="ph-ico" style="background:${bg};">${ico}</div><div class="ph-info"><div class="ph-name">${p.studentName||'Payment'}</div><div class="ph-meta">${p.method.toUpperCase()} · ${fmtDate(p.date)}</div></div><div class="ph-right"><div class="ph-amount">KSh ${fmt(p.amount)}</div><div class="ph-receipt-id" onclick="viewReceipt('${p.receiptId}')">${p.receiptId}</div></div></div>`;
+}
+function methodBadge(m){
+  const map={mpesa:['method-mpesa','M-Pesa'],cash:['method-cash','Cash'],bank:['method-bank','Bank'],cheque:['method-cheque','Cheque']};
+  const[cls,lbl]=map[m]||['',''];
+  return`<span class="method-badge ${cls}">${lbl}</span>`;
+}
+
+/* ── ADMIN RENDERS ── */
+function populateStudentDropdown(){
+  const sel=document.getElementById('rp-student');if(!sel)return;
+  while(sel.options.length>1)sel.remove(1);
+  db.students.forEach(s=>{const o=document.createElement('option');o.value=s.id;o.textContent=`${s.name} – Class ${s.cls} (${s.adm})`;sel.appendChild(o);});
+}
+function updateStudentFeeInfo(){
+  const sid=document.getElementById('rp-student').value;
+  const summary=document.getElementById('student-fee-summary');
+  if(!sid){summary.classList.add('hidden');document.getElementById('pay-preview').classList.add('hidden');return;}
+  const s=db.students.find(x=>x.id===sid);
+  summary.classList.remove('hidden');
+  const bal=s.total-s.paid;
+  document.getElementById('sf-total').textContent='KSh '+fmt(s.total);
+  document.getElementById('sf-paid').textContent='KSh '+fmt(s.paid);
+  document.getElementById('sf-balance').textContent='KSh '+fmt(bal);
+  document.getElementById('sf-progress').style.width=Math.round(s.paid/s.total*100)+'%';
+  calcPreview();
+}
+function calcPreview(){
+  const sid=document.getElementById('rp-student').value;
+  const amt=parseFloat(document.getElementById('rp-amount').value)||0;
+  const preview=document.getElementById('pay-preview');
+  if(!sid||!amt){preview.classList.add('hidden');return;}
+  const s=db.students.find(x=>x.id===sid);
+  const newBal=Math.max(0,(s.total-s.paid)-amt);
+  preview.classList.remove('hidden');
+  document.getElementById('pp-amount').textContent='KSh '+fmt(amt);
+  document.getElementById('pp-newbal').textContent='KSh '+fmt(newBal);
+}
+function submitPayment(){
+  const sid=document.getElementById('rp-student').value;
+  const amt=parseFloat(document.getElementById('rp-amount').value)||0;
+  const method=document.getElementById('rp-method').value;
+  const ref=document.getElementById('rp-ref').value.trim();
+  const date=document.getElementById('rp-date').value;
+  const notes=document.getElementById('rp-notes').value.trim();
+  if(!sid){showToast('Please select a student','error');return;}
+  if(!amt||amt<=0){showToast('Enter a valid amount','error');return;}
+  const s=db.students.find(x=>x.id===sid);
+  const bal=s.total-s.paid;
+  if(amt>bal+0.01){showToast(`Amount exceeds balance of KSh ${fmt(bal)}`,'error');return;}
+  const receiptId=genReceiptId();
+  const balanceAfter=Math.max(0,bal-amt);
+  s.paid+=amt;
+  const payment={id:'p'+(db.payments.length+1),studentId:sid,studentName:s.name,cls:s.cls,amount:amt,method,reference:ref||'—',date,receiptId,balanceAfter,notes,by:'Admin Kamau'};
+  db.payments.unshift(payment);
+  document.getElementById('rp-student').value='';
+  document.getElementById('rp-amount').value='';
+  document.getElementById('rp-ref').value='';
+  document.getElementById('rp-notes').value='';
+  document.getElementById('rp-date').value=today();
+  document.getElementById('student-fee-summary').classList.add('hidden');
+  document.getElementById('pay-preview').classList.add('hidden');
+  renderAdminRecentPayments();renderHistoryTable(db.payments);renderAdminStudents(db.students);
+  if(sid==='s1'){renderParentPaymentHistory();renderParentReceipts();renderDashboardLatestReceipt();updateParentFeeUI();}
+  showToast('Payment recorded! Receipt generated ✓','success');
+  showReceipt(payment,s);
+}
+function renderAdminRecentPayments(){
+  const c=document.getElementById('admin-recent-payments');if(!c)return;
+  c.innerHTML=db.payments.slice(0,5).map(p=>phItem(p)).join('');
+}
+function renderHistoryTable(payments){
+  const tbody=document.getElementById('history-tbody');if(!tbody)return;
+  tbody.innerHTML=payments.map(p=>`<tr>
+    <td><div class="fw-semi">${p.studentName}</div><div class="text-xs text-muted">Class ${p.cls}</div></td>
+    <td><span class="text-primary fw-semi" style="cursor:pointer;" onclick="viewReceipt('${p.receiptId}')">${p.receiptId}</span></td>
+    <td><span class="fw-bold text-success">KSh ${fmt(p.amount)}</span></td>
+    <td>${methodBadge(p.method)}</td>
+    <td class="text-sm">${fmtDate(p.date)}</td>
+    <td><span class="${p.balanceAfter===0?'text-success':'text-danger'} fw-semi">KSh ${fmt(p.balanceAfter)}</span></td>
+    <td><button class="btn btn-ghost btn-sm btn-icon" onclick="viewReceipt('${p.receiptId}')">🧾</button></td>
+  </tr>`).join('');
+}
+function filterHistory(q){renderHistoryTable(db.payments.filter(p=>p.studentName.toLowerCase().includes(q.toLowerCase())||p.receiptId.toLowerCase().includes(q.toLowerCase())));}
+function filterHistoryMethod(m){renderHistoryTable(m?db.payments.filter(p=>p.method===m):[...db.payments]);}
+function exportCSV(){
+  const header='Student,Class,Receipt ID,Amount,Method,Reference,Date,Balance After\n';
+  const rows=db.payments.map(p=>`${p.studentName},${p.cls},${p.receiptId},${p.amount},${p.method},${p.reference},${p.date},${p.balanceAfter}`).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([header+rows],{type:'text/csv'}));a.download='payments.csv';a.click();
+  showToast('CSV exported ✓','success');
+}
+function renderAdminFeeStructure(cls){
+  selectedFeeClass=cls;
+  const items=db.feeStructures[cls]||[];
+  const total=items.reduce((a,i)=>a+i.termly,0);
+  const title=document.getElementById('admin-fs-title');if(title)title.textContent=`Class ${cls} – Fee Structure`;
+  const tbody=document.getElementById('admin-fee-tbl-body');if(!tbody)return;
+  tbody.innerHTML=items.map(i=>`<tr><td><span class="fw-semi">${i.item}</span></td><td><span class="fw-bold text-primary">KSh ${fmt(i.termly)}</span></td><td>KSh ${fmt(i.yearly)}</td><td><span class="text-xs text-muted">${i.notes}</span></td></tr>`).join('')+
+    `<tr class="total-row"><td class="fw-bold">TOTAL</td><td>KSh ${fmt(total)}</td><td>KSh ${fmt(total*3)}</td><td></td></tr>`;
+}
+function renderAdminClassTabs(){
+  const c=document.getElementById('admin-class-tabs');if(!c)return;
+  c.innerHTML=Object.keys(db.feeStructures).map((cls,i)=>`<div class="tab-btn ${i===0?'active':''}" onclick="selectFeeClass('${cls}',this)">${cls}</div>`).join('');
+}
+function selectFeeClass(cls,el){
+  document.querySelectorAll('#admin-class-tabs .tab-btn').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');renderAdminFeeStructure(cls);
+}
+function renderClassSummary(){
+  const c=document.getElementById('class-summary-tbody');if(!c)return;
+  const rows=[
+    {cls:'Class 1A',students:38,total:684000,collected:520000},
+    {cls:'Class 2B',students:40,total:800000,collected:620000},
+    {cls:'Class 3C',students:42,total:924000,collected:700000},
+    {cls:'Class 4B',students:44,total:1100000,collected:792000},
+    {cls:'Class 5A',students:40,total:1040000,collected:780000},
+    {cls:'Class 6A',students:38,total:1064000,collected:788000},
+  ];
+  c.innerHTML=rows.map(r=>{
+    const pct=Math.round(r.collected/r.total*100);const out=r.total-r.collected;
+    return`<tr><td class="fw-semi">${r.cls}</td><td>${r.students}</td><td>KSh ${fmtK(r.total)}</td><td class="text-success fw-semi">KSh ${fmtK(r.collected)}</td><td class="text-danger fw-semi">KSh ${fmtK(out)}</td><td><div style="min-width:80px;"><div class="progress-bar"><div class="progress-fill ${pct>70?'green':'amber'}" style="width:${pct}%"></div></div><div class="text-xs text-muted mt-4">${pct}%</div></div></td></tr>`;
+  }).join('');
+}
+function renderAdminStudents(students){
+  const c=document.getElementById('admin-students-tbody');if(!c)return;
+  c.innerHTML=students.map(s=>{
+    const bal=s.total-s.paid;const pct=Math.round(s.paid/s.total*100);
+    const status=bal===0?['badge-success','Fully Paid']:pct>0?['badge-warning','Partial']:['badge-danger','Unpaid'];
+    return`<tr><td><div class="fw-semi">${s.name}</div><div class="text-xs text-muted">${s.adm}</div></td><td><span class="badge badge-primary">${s.cls}</span></td><td>KSh ${fmt(s.total)}</td><td class="text-success fw-semi">KSh ${fmt(s.paid)}</td><td class="${bal===0?'text-success':'text-danger'} fw-semi">KSh ${fmt(bal)}</td><td><span class="badge ${status[0]}">${status[1]}</span></td><td><button class="btn btn-ghost btn-sm" onclick="quickPayStudent('${s.id}')">Pay</button></td></tr>`;
+  }).join('');
+}
+function filterStudents(q){renderAdminStudents(db.students.filter(s=>s.name.toLowerCase().includes(q.toLowerCase())||s.adm.toLowerCase().includes(q.toLowerCase())));}
+function filterStudentStatus(status){
+  let f=db.students;
+  if(status==='paid')f=db.students.filter(s=>s.paid>=s.total);
+  else if(status==='partial')f=db.students.filter(s=>s.paid>0&&s.paid<s.total);
+  else if(status==='unpaid')f=db.students.filter(s=>s.paid===0);
+  renderAdminStudents(f);
+}
+function quickPayStudent(sid){adminNav('record');setTimeout(()=>{const sel=document.getElementById('rp-student');sel.value=sid;updateStudentFeeInfo();},120);}
+function renderAdminLessons(){
+  const c=document.getElementById('admin-lessons-list');if(!c)return;
+  c.innerHTML=db.adminLessons.map(l=>`<div class="lesson-item" style="cursor:default;"><div class="lesson-thumb" style="background:var(--surface2);">${l.icon}</div><div style="flex:1;"><div class="l-title">${l.title}</div><div class="l-meta">${l.subject} · ${l.cls}</div><div class="l-date">${l.date}</div></div><button class="btn btn-ghost btn-sm">Edit</button></div>`).join('');
+}
+
+/* ── FEE STRUCTURE EDITOR ── */
+function addFeeRow(){
+  const div=document.createElement('div');div.className='fee-row-ed';
+  div.innerHTML=`<input class="input" placeholder="Fee item name"/><div class="inp-prefix"><span class="pre-tag">KSh</span><input type="number" placeholder="0"/></div><button class="btn btn-ghost btn-icon" onclick="this.parentElement.remove()">✕</button>`;
+  document.getElementById('fee-rows-editor').appendChild(div);
+}
+function saveFeeStructure(){closeModal('modal-fee-structure');showToast('Fee structure saved ✓','success');}
+
+/* ── RECEIPT ── */
+function viewReceipt(receiptId){
+  const p=db.payments.find(x=>x.receiptId===receiptId);if(!p){showToast('Receipt not found','error');return;}
+  const s=db.students.find(x=>x.id===p.studentId)||{name:p.studentName,adm:'—',cls:p.cls};
+  renderReceiptModal(p,s);openModal('modal-receipt');
+}
+function renderReceiptModal(payment,student){
+  const methodLabel={mpesa:'M-Pesa',cash:'Cash',bank:'Bank Transfer',cheque:'Cheque'}[payment.method]||payment.method;
+  const bars=Array.from({length:30},()=>`<div class="barcode-bar" style="width:${1+Math.random()*2}px;height:${12+Math.random()*14}px;"></div>`).join('');
+  document.getElementById('receipt-card').innerHTML=`
+    <div class="receipt-header">
+      <div class="receipt-stamp">PAID<br>OFFICIAL</div>
+      <div class="receipt-school">St. Mary's Primary School · Nairobi</div>
+      <div class="receipt-title">Official Receipt</div>
+      <div class="receipt-id">${payment.receiptId}</div>
+    </div>
+    <div class="receipt-body">
+      <div class="receipt-row"><span class="rl">Student Name</span><span class="rr">${student.name}</span></div>
+      <div class="receipt-row"><span class="rl">Admission No.</span><span class="rr">${student.adm}</span></div>
+      <div class="receipt-row"><span class="rl">Class</span><span class="rr">Class ${student.cls||payment.cls}</span></div>
+      <div class="receipt-row"><span class="rl">Term</span><span class="rr">Term 2, 2025</span></div>
+      <div class="receipt-row"><span class="rl">Date</span><span class="rr">${fmtDate(payment.date)}</span></div>
+      <div class="receipt-row"><span class="rl">Method</span><span class="rr">${methodLabel}</span></div>
+      <div class="receipt-row"><span class="rl">Reference</span><span class="rr">${payment.reference||'—'}</span></div>
+      <div class="receipt-row"><span class="rl">Recorded By</span><span class="rr">${payment.by||'—'}</span></div>
+    </div>
+    <div class="receipt-total"><span class="rt-lbl">Amount Paid</span><span class="rt-val">KSh ${fmt(payment.amount)}</span></div>
+    <div class="receipt-balance"><span class="rb-lbl">Remaining Balance</span><span class="rb-val ${payment.balanceAfter===0?'text-success':'text-danger'}">KSh ${fmt(payment.balanceAfter)}</span></div>
+    <div class="receipt-footer"><div class="barcode">${bars}</div><div class="mt-8">Thank you for your payment · <strong>${payment.receiptId}</strong></div><div>Keep this receipt for your records · St. Mary's Primary</div></div>`;
+  document.getElementById('sms-preview-text').textContent=`Dear Parent, PAYMENT CONFIRMED. Student: ${student.name}. Amount Paid: KSh ${fmt(payment.amount)}. Balance: KSh ${fmt(payment.balanceAfter)}. Receipt: ${payment.receiptId}. Thank you. St. Mary's Primary School.`;
+}
+function showReceipt(payment,student){renderReceiptModal(payment,student);openModal('modal-receipt');}
+function sendSMS(btn){
+  btn.innerHTML='<div class="spinner"></div> Sending...';btn.disabled=true;
+  setTimeout(()=>{btn.innerHTML='✅ SMS Sent!';btn.style.background='rgba(34,197,94,.3)';showToast('SMS sent to parent ✓','success');},1800);
+}
+
+/* ── MPESA ── */
+function openPayModal(){updateParentFeeUI();openModal('modal-pay');}
+function simulateMpesa(){
+  closeModal('modal-pay');openModal('modal-mpesa');
+  document.getElementById('mpesa-loader').style.display='flex';
+  document.getElementById('mpesa-success').style.display='none';
+  setTimeout(()=>{
+    const amt=parseFloat(document.getElementById('mpesa-amount').value)||8500;
+    const s=db.students[0];const bal=s.total-s.paid;
+    const actualAmt=Math.min(amt,bal);const receiptId=genReceiptId();
+    const balanceAfter=Math.max(0,bal-actualAmt);
+    s.paid+=actualAmt;
+    const payment={id:'p'+(db.payments.length+1),studentId:'s1',studentName:s.name,cls:s.cls,amount:actualAmt,method:'mpesa',reference:'MPESA'+Math.floor(Math.random()*99999999),date:today(),receiptId,balanceAfter,notes:'Parent M-Pesa payment',by:'Parent Portal'};
+    db.payments.unshift(payment);
+    renderParentPaymentHistory();renderParentReceipts();renderDashboardLatestReceipt();updateParentFeeUI();
+    if(document.getElementById('admin-recent-payments'))renderAdminRecentPayments();
+    if(document.getElementById('history-tbody'))renderHistoryTable(db.payments);
+    pendingMpesaPayment=payment;
+    document.getElementById('mpesa-success-detail').textContent=`KSh ${fmt(actualAmt)} received · Receipt: ${receiptId}`;
+    document.getElementById('mpesa-loader').style.display='none';
+    document.getElementById('mpesa-success').style.display='block';
+  },3000);
+}
+function finishMpesaPayment(){
+  closeModal('modal-mpesa');
+  if(pendingMpesaPayment){showReceipt(pendingMpesaPayment,db.students[0]);pendingMpesaPayment=null;}
+}
+
+/* ── CHAT ── */
+function getAIResponse(msg){
+  const m=msg.toLowerCase();
+  if(m.includes('fraction')||m.includes('math'))return aiResponses.fractions;
+  if(m.includes('science')||m.includes('revision')||m.includes('question'))return aiResponses.science;
+  if(m.includes('perform')||m.includes('overall')||m.includes('result'))return aiResponses.performance;
+  if(m.includes('focus')||m.includes('improve')||m.includes('weak'))return aiResponses.focus;
+  return aiResponses.default;
+}
+function sendChat(){
+  const input=document.getElementById('chat-input');const msg=input.value.trim();if(!msg)return;
+  input.value='';addChatMsg(msg,'user');showTyping();
+  setTimeout(()=>{hideTyping();addChatMsg(getAIResponse(msg),'ai');},(1400+Math.random()*600));
+}
+function sendSuggestion(text){document.getElementById('chat-input').value=text;sendChat();}
+function addChatMsg(text,role){
+  const c=document.getElementById('chat-messages');
+  const now=new Date().toLocaleTimeString('en-KE',{hour:'2-digit',minute:'2-digit'});
+  const el=document.createElement('div');el.className='chat-msg '+role;
+  el.innerHTML=`<div class="chat-bubble">${text.replace(/\n/g,'<br/>')}</div><span class="chat-time">${now}</span>`;
+  c.appendChild(el);c.scrollTop=c.scrollHeight;
+}
+function showTyping(){
+  const c=document.getElementById('chat-messages');
+  const el=document.createElement('div');el.className='chat-msg ai';el.id='typing-el';
+  el.innerHTML=`<div class="chat-bubble" style="padding:12px 15px;"><div style="display:flex;gap:4px;align-items:center;"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div>`;
+  c.appendChild(el);c.scrollTop=c.scrollHeight;
+}
+function hideTyping(){const el=document.getElementById('typing-el');if(el)el.remove();}
+
+/* ── MODALS ── */
+function openModal(id){document.getElementById(id).classList.add('active');document.body.style.overflow='hidden';}
+function closeModal(id){document.getElementById(id).classList.remove('active');document.body.style.overflow='';}
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    document.querySelectorAll('.modal-overlay.active').forEach(m=>m.classList.remove('active'));
+    closeDrawer('p');closeDrawer('a');
+    document.body.style.overflow='';
+  }
+});
+
+/* ── OTP KEYBOARD ── */
+document.addEventListener('keydown',e=>{
+  if(e.target.classList.contains('otp-input')&&e.key==='Backspace'&&!e.target.value){
+    const inputs=document.querySelectorAll('.otp-input');
+    const idx=Array.from(inputs).indexOf(e.target);
+    if(idx>0)inputs[idx-1].focus();
+  }
+});
+
+/* ── TOAST ── */
+function showToast(msg,type='info'){
+  const wrap=document.getElementById('toast-wrap');
+  const el=document.createElement('div');el.className=`toast ${type}`;
+  el.innerHTML=`<span>${type==='success'?'✅':type==='error'?'❌':'ℹ️'}</span>${msg}`;
+  wrap.appendChild(el);
+  setTimeout(()=>{el.style.opacity='0';el.style.transition='opacity .3s';setTimeout(()=>el.remove(),300)},3200);
+}
+
+/* ── INIT ── */
+document.addEventListener('DOMContentLoaded',()=>showPage('page-login'));
+</script>
+</body>
+</html>
